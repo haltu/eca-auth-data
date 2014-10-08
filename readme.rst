@@ -2,9 +2,68 @@
 Role database for EduCloud
 **************************
 
-The purpose of the RoleDB is to emulate national centralized Opintopolku database.
-
 .. image:: diagram.png
+
+The sequence diagram shows basic use cases in the Educloud pilot. It begins from a state where the user
+is already registered to the central Identity Provider (IdP) which is maintained by the Educloud.
+
+The Django project found in this repository is the RoleDB in the diagram. It provides the database for
+the attributes which are returned with SAML assertions to Service Providers (SP). It emulates
+the Opintopolku database which is shown in the diagram as optional step. Some day hopefully this RoleDb
+can be replaced with Opintopolku.
+
+The IdP uses several authentication sources. For example Facebook and other LMS services. These auth sources
+all use different identifiers for users. RoleDB converts these identifiers to OppijaIDs or OIDs. OID is
+used by all SPs to identify the users. This is made possible by returning the OID in SAML assertions
+to SPs when they request authentication.
+
+The API between IdP and RoleDb is relatively simple. RoleDb has one endpoint ``/api/1/user?name=value``
+which can be queried for the attributes. The result is JSON dict of data. In the query ``name`` is the
+parameter name used to filter users from the database. Name of the parameter is defined when new auth
+sources are registered to the IdP. Name of the parameter can contain only a-z chars.
+The list of valid filter names is available from IdP admins.
+The value for the filter parameter is UTF-8 as urlencoded string.
+
+For example, query ``/api/1/user?facebook_id=foo`` would give the following response::
+
+  { 
+    "username": "123abc",
+    "roles": [
+      {
+        "school": 17392,
+        "role": "teacher",
+        "group": "7A"
+      }
+    ]
+  }
+
+Fields are defined as follows:
+
+username
+  This is the OID. It follows the OID specification.
+school
+  Official school ID. A number.
+role
+  Either ``"teacher"`` or ``"student"``.
+group
+  The class or group for the user.
+
+Other notes
+===========
+
+The auth source selection can be made automatic or SP can pre-select it. More info from IdP admins.
+
+The LMS SSO auth source method is a special case. When used like described in the diagram the user is
+authenticated from the same LMS which initiated the SAML authentication query. This seems counter-intuitive
+but it serves a special purpose: it demonstrates how the system could work when full blown federated SAML
+based system is used. Here the LMS implements really simple API which is queried for the user identifier.
+It should not actually cause login or open a session to the LMS. It should just show login prompt for the
+user, check the credentials, and then return the user identifier to the IdP.
+
+Source for the image
+====================
+
+Generated with www.websequencediagrams.com
 
 ::
 
