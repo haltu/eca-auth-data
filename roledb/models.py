@@ -29,10 +29,22 @@ class School(models.Model):
 
 
 class User(AbstractUser):
-  twitter_id = models.CharField(max_length=2048, blank=True, null=True, default=None)
-  facebook_id = models.CharField(max_length=2048, blank=True, null=True, default=None)
-  linkedin_id = models.CharField(max_length=2048, blank=True, null=True, default=None)
-  mepin_id = models.CharField(max_length=2048, blank=True, null=True, default=None)
+  pass
+
+class Attribute(models.Model):
+  name = models.CharField(max_length=2048, blank=True, null=True, default=None)
+
+  def __unicode__(self):
+    return self.name
+
+
+class UserAttribute(models.Model):
+  user = models.ForeignKey(User, related_name='attributes')
+  name = models.ForeignKey(Attribute)
+  value = models.CharField(max_length=2048, blank=True, null=True, default=None)
+
+  def __unicode__(self):
+    return "%s: %s" % (self.name, self.value)
 
 
 class Role(models.Model):
