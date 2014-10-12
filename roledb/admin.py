@@ -2,6 +2,7 @@
 from django.utils.translation import ugettext, ugettext_lazy as _
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
+from roledb.forms import UserCreationForm, UserChangeForm
 from roledb.models import Municipality
 from roledb.models import School
 from roledb.models import Role
@@ -65,7 +66,7 @@ class UserAdmin(DjangoUserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('username', 'password1', 'password2'),
+            'fields': ('username',),
         }),
     )
     list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff')
@@ -74,6 +75,8 @@ class UserAdmin(DjangoUserAdmin):
     ordering = ('username',)
     filter_horizontal = ('groups', 'user_permissions')
     inlines = [UserAttributeInline, AttendanceInline]    
+    form = UserChangeForm
+    add_form = UserCreationForm
 
 
 admin.site.register(Municipality, MunicipalityAdmin)
