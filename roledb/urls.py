@@ -7,7 +7,7 @@ urlpatterns = patterns('',
     # url(r'^$', 'roledb.views.home', name='home'),
     # url(r'^blog/', include('blog.urls')),
 
-    url(r'^api/1/user/(?P<username>.*)$', UserGetView.as_view()),
+    url(r'^api/1/user$', UserGetView.as_view()),
 
     url(r'^admin/', include(admin.site.urls)),
 )

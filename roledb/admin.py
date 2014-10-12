@@ -35,8 +35,8 @@ class AttributeAdmin(admin.ModelAdmin):
 
 
 class UserAttributeAdmin(admin.ModelAdmin):
-    list_display = ('user', 'name', 'value')
-    list_filter = ('name',)
+    list_display = ('user', 'attribute', 'value')
+    list_filter = ('attribute',)
     search_fields = ('user__username', 'value')
 
 

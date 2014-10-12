@@ -20,9 +20,15 @@ to SPs when they request authentication.
 The API
 =======
 
-The API between IdP and RoleDb is relatively simple. RoleDb has one endpoint ``/api/1/user?name=value``
-which can be queried for the attributes. The result is JSON dict of data. In the query ``name`` is the
-parameter name used to filter users from the database. Name of the parameter is defined when new auth
+RoleDb has one endpoint ``/api/1/user?name=value`` which can be queried for the attributes. The result is JSON dict of data.
+
+Query is made by GET parameters. Only one parameter is allowed. ``Not found`` is returned if:
+
+  * the parameter name is not recognized
+  * multiple results would be returned (only one result is allowed)
+  * no parameters are specified
+
+In the query ``name`` is the parameter name used to filter users from the database. Name of the parameter is defined when new auth
 sources are registered to the IdP. Name of the parameter can contain only a-z chars.
 The list of valid filter names is available from IdP admins.
 The value for the filter parameter is UTF-8 as urlencoded string.
@@ -40,7 +46,7 @@ For example, query ``/api/1/user?facebook_id=foo`` would give the following resp
     ]
   }
 
-Fields are defined as follows:
+User can have multiple roles, and also multiple roles in one school. Fields in the ``roles`` dict are defined as follows:
 
 username
   This is the OID. It follows the OID specification.
@@ -50,6 +56,8 @@ role
   Either ``"teacher"`` or ``"student"``.
 group
   The class or group for the user.
+
+
 
 Authentication to the API is based on tokens. You should send ``Authorization: Token abcd1234`` header. For example::
 

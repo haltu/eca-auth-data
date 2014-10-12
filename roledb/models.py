@@ -42,12 +42,12 @@ class Attribute(models.Model):
 
 class UserAttribute(models.Model):
   user = models.ForeignKey(User, related_name='attributes')
-  name = models.ForeignKey(Attribute)
+  attribute = models.ForeignKey(Attribute)
   value = models.CharField(max_length=2048, blank=True, null=True, default=None)
   source = models.ForeignKey(Source)
 
   def __unicode__(self):
-    return "%s: %s" % (self.name, self.value)
+    return "%s: %s" % (self.attribute, self.value)
 
 
 class Role(models.Model):
