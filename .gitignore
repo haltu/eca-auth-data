@@ -3,4 +3,4 @@ syntax: glob
 
 db.sqlite3
 *.pyc
-
+*.swp
