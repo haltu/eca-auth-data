@@ -22,6 +22,7 @@ class Municipality(models.Model):
 
 class School(models.Model):
   name = models.CharField(max_length=2048)
+  school_id = models.CharField(max_length=2048)
   municipality = models.ForeignKey(Municipality, related_name='schools')
 
   def __unicode__(self):
@@ -30,6 +31,7 @@ class School(models.Model):
 
 class User(AbstractUser):
   pass
+
 
 class Attribute(models.Model):
   name = models.CharField(max_length=2048, blank=True, null=True, default=None)
@@ -42,6 +44,7 @@ class UserAttribute(models.Model):
   user = models.ForeignKey(User, related_name='attributes')
   name = models.ForeignKey(Attribute)
   value = models.CharField(max_length=2048, blank=True, null=True, default=None)
+  source = models.ForeignKey(Source)
 
   def __unicode__(self):
     return "%s: %s" % (self.name, self.value)
@@ -54,17 +57,14 @@ class Role(models.Model):
     return self.name
 
 
-class UserRole(models.Model):
-  role = models.ForeignKey(Role)
+class Attendance(models.Model):
+  user = models.ForeignKey(User, related_name='attendances')
   school = models.ForeignKey(School, related_name='users')
-  user = models.ForeignKey(User, related_name='roles')
+  role = models.ForeignKey(Role)
+  group = models.CharField(max_length=2048, blank=True, default='')
+  source = models.ForeignKey(Source, related_name='attendances')
 
   def __unicode__(self):
     return "%s: %s / %s" % (self.role, self.school.name, self.school.municipality.name)
-
-
-class Service(models.Model):
-  name = models.CharField(max_length=2048)
-  roles = models.ManyToManyField(School, related_name='services')
 
 

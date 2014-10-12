@@ -28,10 +28,6 @@ class Migration(migrations.Migration):
                 ('is_staff', models.BooleanField(default=False, help_text='Designates whether the user can log into this admin site.', verbose_name='staff status')),
                 ('is_active', models.BooleanField(default=True, help_text='Designates whether this user should be treated as active. Unselect this instead of deleting accounts.', verbose_name='active')),
                 ('date_joined', models.DateTimeField(default=django.utils.timezone.now, verbose_name='date joined')),
-                ('twitter_id', models.CharField(default=None, max_length=2048, null=True, blank=True)),
-                ('facebook_id', models.CharField(default=None, max_length=2048, null=True, blank=True)),
-                ('linkedin_id', models.CharField(default=None, max_length=2048, null=True, blank=True)),
-                ('mepin_id', models.CharField(default=None, max_length=2048, null=True, blank=True)),
                 ('groups', models.ManyToManyField(related_query_name='user', related_name='user_set', to='auth.Group', blank=True, help_text='The groups this user belongs to. A user will get all permissions granted to each of his/her group.', verbose_name='groups')),
                 ('user_permissions', models.ManyToManyField(related_query_name='user', related_name='user_set', to='auth.Permission', blank=True, help_text='Specific permissions for this user.', verbose_name='user permissions')),
             ],
@@ -39,6 +35,26 @@ class Migration(migrations.Migration):
                 'abstract': False,
                 'verbose_name': 'user',
                 'verbose_name_plural': 'users',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Attendance',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('group', models.CharField(default=b'', max_length=2048, blank=True)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Attribute',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(default=None, max_length=2048, null=True, blank=True)),
+            ],
+            options={
             },
             bases=(models.Model,),
         ),
@@ -67,18 +83,8 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=2048)),
+                ('school_id', models.CharField(max_length=2048)),
                 ('municipality', models.ForeignKey(related_name=b'schools', to='roledb.Municipality')),
-            ],
-            options={
-            },
-            bases=(models.Model,),
-        ),
-        migrations.CreateModel(
-            name='Service',
-            fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('name', models.CharField(max_length=2048)),
-                ('roles', models.ManyToManyField(related_name=b'services', to='roledb.School')),
             ],
             options={
             },
@@ -95,15 +101,40 @@ class Migration(migrations.Migration):
             bases=(models.Model,),
         ),
         migrations.CreateModel(
-            name='UserRole',
+            name='UserAttribute',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('role', models.ForeignKey(to='roledb.Role')),
-                ('school', models.ForeignKey(related_name=b'users', to='roledb.School')),
-                ('user', models.ForeignKey(related_name=b'roles', to=settings.AUTH_USER_MODEL)),
+                ('value', models.CharField(default=None, max_length=2048, null=True, blank=True)),
+                ('name', models.ForeignKey(to='roledb.Attribute')),
+                ('source', models.ForeignKey(to='roledb.Source')),
+                ('user', models.ForeignKey(related_name=b'attributes', to=settings.AUTH_USER_MODEL)),
             ],
             options={
             },
             bases=(models.Model,),
+        ),
+        migrations.AddField(
+            model_name='attendance',
+            name='role',
+            field=models.ForeignKey(to='roledb.Role'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='attendance',
+            name='school',
+            field=models.ForeignKey(related_name=b'users', to='roledb.School'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='attendance',
+            name='source',
+            field=models.ForeignKey(related_name=b'attendances', to='roledb.Source'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='attendance',
+            name='user',
+            field=models.ForeignKey(related_name=b'attendances', to=settings.AUTH_USER_MODEL),
+            preserve_default=True,
         ),
     ]

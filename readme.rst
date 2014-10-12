@@ -30,7 +30,7 @@ For example, query ``/api/1/user?facebook_id=foo`` would give the following resp
     "username": "123abc",
     "roles": [
       {
-        "school": 17392,
+        "school": "17392",
         "role": "teacher",
         "group": "7A"
       }
@@ -42,7 +42,7 @@ Fields are defined as follows:
 username
   This is the OID. It follows the OID specification.
 school
-  Official school ID. A number.
+  Official school ID.
 role
   Either ``"teacher"`` or ``"student"``.
 group

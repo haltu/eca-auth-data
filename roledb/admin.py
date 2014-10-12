@@ -2,7 +2,15 @@
 from django.utils.translation import ugettext, ugettext_lazy as _
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
-from roledb.models import Municipality, School, Role, UserRole, Service, User, Attribute, UserAttribute
+from roledb.models import Municipality
+from roledb.models import School
+from roledb.models import Role
+from roledb.models import Attendance
+from roledb.models import Source
+from roledb.models import User
+from roledb.models import Attribute
+from roledb.models import UserAttribute
+
 
 class MunicipalityAdmin(admin.ModelAdmin):
     list_display = ('name',)
@@ -16,10 +24,10 @@ class RoleAdmin(admin.ModelAdmin):
     list_display = ('name',)
 
 
-class UserRoleAdmin(admin.ModelAdmin):
-    list_display = ('user', 'role', 'school')
-    list_filter = ('role',)
-    search_fields = ('school__name', 'user__username')
+class AttendanceAdmin(admin.ModelAdmin):
+    list_display = ('user', 'school', 'role', 'group', 'source')
+    list_filter = ('role', 'source')
+    search_fields = ('school__school_id', 'school__name', 'school__municipality__name', 'user__username', 'group',)
 
 
 class AttributeAdmin(admin.ModelAdmin):
@@ -29,16 +37,22 @@ class AttributeAdmin(admin.ModelAdmin):
 class UserAttributeAdmin(admin.ModelAdmin):
     list_display = ('user', 'name', 'value')
     list_filter = ('name',)
-    search_fields = ('user__username',)
+    search_fields = ('user__username', 'value')
 
 
-class ServiceAdmin(admin.ModelAdmin):
+class SourceAdmin(admin.ModelAdmin):
     list_display = ('name',)
 
 
 class UserAttributeInline(admin.TabularInline):
     model = UserAttribute
     extra = 0
+
+
+class AttendanceInline(admin.TabularInline):
+    model = Attendance
+    extra = 0
+
 
 class UserAdmin(DjangoUserAdmin):
     fieldsets = (
@@ -59,14 +73,14 @@ class UserAdmin(DjangoUserAdmin):
     search_fields = ('username', 'first_name', 'last_name', 'email')
     ordering = ('username',)
     filter_horizontal = ('groups', 'user_permissions')
-    inlines = [UserAttributeInline]    
+    inlines = [UserAttributeInline, AttendanceInline]    
 
 
 admin.site.register(Municipality, MunicipalityAdmin)
 admin.site.register(School, SchoolAdmin)
 admin.site.register(Role, RoleAdmin)
-admin.site.register(UserRole, UserRoleAdmin)
-admin.site.register(Service, ServiceAdmin)
+admin.site.register(Attendance, AttendanceAdmin)
+admin.site.register(Source, SourceAdmin)
 admin.site.register(User, UserAdmin)
 admin.site.register(Attribute, AttributeAdmin)
 admin.site.register(UserAttribute, UserAttributeAdmin)
