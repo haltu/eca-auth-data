@@ -17,6 +17,9 @@ all use different identifiers for users. RoleDB converts these identifiers to Op
 used by all SPs to identify the users. This is made possible by returning the OID in SAML assertions
 to SPs when they request authentication.
 
+The API
+=======
+
 The API between IdP and RoleDb is relatively simple. RoleDb has one endpoint ``/api/1/user?name=value``
 which can be queried for the attributes. The result is JSON dict of data. In the query ``name`` is the
 parameter name used to filter users from the database. Name of the parameter is defined when new auth
@@ -47,6 +50,13 @@ role
   Either ``"teacher"`` or ``"student"``.
 group
   The class or group for the user.
+
+Authentication to the API is based on tokens. You should send ``Authorization: Token abcd1234`` header. For example::
+
+  curl -H "Authorization: Token 9c5d6df27105387b586286b06684ac2dcdbf09d3"  http://foo.example.com/api/1/user/
+
+For debugging purposes you can also use session based authentication if
+you have credentials to access the admin pages. So if you can log into admin you can access the API with the same browser.
 
 Other notes
 ===========
