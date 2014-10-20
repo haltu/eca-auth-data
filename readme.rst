@@ -12,21 +12,6 @@ educloud.oid
 educloud.data
   Contains whole JSON document coming from the API. It is base64 encoded.
 
-.. image:: diagram.png
-
-The sequence diagram shows basic use cases in the Educloud pilot. It begins from a state where the user
-is already registered to the central Identity Provider (IdP) which is maintained by the Educloud.
-
-The Django project found in this repository is the RoleDB in the diagram. It provides the database for
-the attributes which are returned with SAML assertions to Service Providers (SP). It emulates
-the Opintopolku database which is shown in the diagram as optional step. Some day hopefully this RoleDb
-can be replaced with Opintopolku.
-
-The IdP uses several authentication sources. For example Facebook and other LMS services. These auth sources
-all use different identifiers for users. RoleDB converts these identifiers to OppijaIDs or OIDs. OID is
-used by all SPs to identify the users. This is made possible by returning the OID in SAML assertions
-to SPs when they request authentication.
-
 The API
 =======
 
@@ -91,6 +76,21 @@ Authentication to the API is based on tokens. You should send ``Authorization: T
 
 For debugging purposes you can also use session based authentication if
 you have credentials to access the admin pages. So if you can log into admin you can access the API with the same browser.
+
+.. image:: diagram.png
+
+The sequence diagram shows basic use cases in the Educloud pilot. It begins from a state where the user
+is already registered to the central Identity Provider (IdP) which is maintained by the Educloud.
+
+The Django project found in this repository is the RoleDB in the diagram. It provides the database for
+the attributes which are returned with SAML assertions to Service Providers (SP). It emulates
+the Opintopolku database which is shown in the diagram as optional step. Some day hopefully this RoleDb
+can be replaced with Opintopolku.
+
+The IdP uses several authentication sources. For example Facebook and other LMS services. These auth sources
+all use different identifiers for users. RoleDB converts these identifiers to OppijaIDs or OIDs. OID is
+used by all SPs to identify the users. This is made possible by returning the OID in SAML assertions
+to SPs when they request authentication.
 
 Other notes
 ===========
