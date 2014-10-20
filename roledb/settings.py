@@ -100,3 +100,9 @@ REST_FRAMEWORK = {
     'PAGINATE_BY': 10
 }
 
+# Try and import local settings which can be used to override any of the above.
+try:
+    from settings_local import *
+except ImportError:
+    pass
+
