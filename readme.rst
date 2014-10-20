@@ -54,10 +54,17 @@ For example, query ``/api/1/user?facebook_id=foo`` would give the following resp
     ]
   }
 
-User can have multiple roles, and also multiple roles in one school. Fields in the ``roles`` dict are defined as follows:
+User can have multiple roles, and also multiple roles in one school. As the RoleDB tries to model the real situation
+where one user can be teacher and student in different shools this has to be here. It is also possible to decide that
+only one role object per user is acceptable when the data is imported to the database.
+
+General fields:
 
 username
   This is the OID. It follows the OID specification.
+
+Fields in the ``roles`` dict are defined as follows:
+
 school
   Official school ID.
 role
@@ -65,7 +72,8 @@ role
 group
   The class or group for the user.
 
-In addition to role data custom attributes can be added at runtime. These are installation specific and 
+In addition to role data custom attributes can be added at runtime. These are installation specific and defined in
+the database.
 
 Authentication to the API is based on tokens. You should send ``Authorization: Token abcd1234`` header. For example::
 
@@ -73,6 +81,16 @@ Authentication to the API is based on tokens. You should send ``Authorization: T
 
 For debugging purposes you can also use session based authentication if
 you have credentials to access the admin pages. So if you can log into admin you can access the API with the same browser.
+
+Data as SAML attributes
+=======================
+
+Data coming from RoleDB should be directly visible to all service providers as SAML attributes. There are two attributes:
+
+educloud.oid
+  This is same as the username field in the API.
+educloud.data
+  Contains whole JSON document coming from the API. It is base64 encoded.
 
 Other notes
 ===========
