@@ -52,8 +52,7 @@ For example: manage.py csv_import file.csv dreamschool,facebook,twitter,linkedin
     # attribute names are defined in the commandline as the second parameter
     # for example: manage.py csv_import file.csv dreamschool,facebook,twitter,linkedin,mepin
     self.attribute_names = OrderedDict()
-    for a in args[1].split(','):
-      key = a + '_id'
+    for key in args[1].split(','):
       self.attribute_names[key],_ = Attribute.objects.get_or_create(name=key)
     self.source,_ = Source.objects.get_or_create(name=options['source'])
     # If you need more roles, add them here
@@ -69,7 +68,8 @@ For example: manage.py csv_import file.csv dreamschool,facebook,twitter,linkedin
         'school': r[1], # School
         'group': r[2], # Class
         'role': r[3], # Role
-        'name': r[4], # Calling name
+        'first_name': r[4], # First name
+        'last_name': r[5], # Last name
       }
 
       # This is not mandatory, but it would be nice. Can be changed to error by terminating the script here.
@@ -77,7 +77,7 @@ For example: manage.py csv_import file.csv dreamschool,facebook,twitter,linkedin
         print 'WARNING, role not in:', repr(self.role_names.keys())
 
       attributes = {}
-      i = 5 # Next csv_data row index is 5 :)
+      i = 6 # Next csv_data row index is 6 :)
       for a in self.attribute_names:
         attributes[a] = r[i]
         i = i + 1
@@ -101,7 +101,8 @@ For example: manage.py csv_import file.csv dreamschool,facebook,twitter,linkedin
     # Create User
     # User is identified from username and other fields are updated
     user,_ = User.objects.get_or_create(username=d['username'])
-    user.first_name = d['name']
+    user.first_name = d['first_name']
+    user.last_name = d['last_name']
     user.save()
 
     # Assign attributes for User
@@ -120,5 +121,4 @@ For example: manage.py csv_import file.csv dreamschool,facebook,twitter,linkedin
 
     # Create Attendance object for User. There can be more than one Attendance per User.
     att,_ = Attendance.objects.get_or_create(user=user, school=school, role=self.role_names[d['role']], group=d['group'], source=self.source)
-
 

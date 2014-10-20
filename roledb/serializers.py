@@ -9,7 +9,7 @@ class UserSerializer(serializers.ModelSerializer):
 
   class Meta:
     model = User
-    fields = ('username', 'roles')
+    fields = ('username', 'roles', 'attributes')
 
   def role_data(self, obj):
     data = []
@@ -28,5 +28,6 @@ class UserSerializer(serializers.ModelSerializer):
       d['name'] = a.attribute.name
       d['value'] = a.value
       data.append(d)
-  return data
+    return data
+
 
