@@ -37,11 +37,19 @@ For example, query ``/api/1/user?facebook_id=foo`` would give the following resp
 
   { 
     "username": "123abc",
+    "first_name": "Teppo",
+    "last_name": "Testaaja",
     "roles": [
       {
         "school": "17392",
         "role": "teacher",
         "group": "7A"
+      }
+    ]
+    "attributes": [
+      {
+        "attribute1_id": "attribute1_data",
+        "attribute2_id": "attribute2_data"
       }
     ]
   }
@@ -57,7 +65,7 @@ role
 group
   The class or group for the user.
 
-
+In addition to role data custom attributes can be added at runtime. These are installation specific and 
 
 Authentication to the API is based on tokens. You should send ``Authorization: Token abcd1234`` header. For example::
 
