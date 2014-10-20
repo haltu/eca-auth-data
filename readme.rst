@@ -2,6 +2,16 @@
 Role database for EduCloud
 **************************
 
+Data as SAML attributes
+=======================
+
+Data coming from RoleDB should be directly visible to all service providers as SAML attributes. There are two attributes:
+
+educloud.oid
+  This is same as the username field in the API.
+educloud.data
+  Contains whole JSON document coming from the API. It is base64 encoded.
+
 .. image:: diagram.png
 
 The sequence diagram shows basic use cases in the Educloud pilot. It begins from a state where the user
@@ -81,16 +91,6 @@ Authentication to the API is based on tokens. You should send ``Authorization: T
 
 For debugging purposes you can also use session based authentication if
 you have credentials to access the admin pages. So if you can log into admin you can access the API with the same browser.
-
-Data as SAML attributes
-=======================
-
-Data coming from RoleDB should be directly visible to all service providers as SAML attributes. There are two attributes:
-
-educloud.oid
-  This is same as the username field in the API.
-educloud.data
-  Contains whole JSON document coming from the API. It is base64 encoded.
 
 Other notes
 ===========
