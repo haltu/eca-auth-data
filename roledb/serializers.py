@@ -9,7 +9,7 @@ class UserSerializer(serializers.ModelSerializer):
 
   class Meta:
     model = User
-    fields = ('username', 'roles', 'attributes')
+    fields = ('username','first_name','last_name','roles','attributes')
 
   def role_data(self, obj):
     data = []
