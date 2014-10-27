@@ -2,9 +2,10 @@
 from roledb.settings import *
 
 DEBUG = False
+TEMPLATE_DEBUG = False
 
 try:
-  from roledb.local_settings import *
+  from settings_local import *
 except ImportError:
   pass
 
