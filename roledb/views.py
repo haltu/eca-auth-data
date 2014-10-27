@@ -2,11 +2,12 @@
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
-from roledb.serializers import UserSerializer
-from roledb.models import User, Attribute
+from rest_framework import viewsets
+from roledb.serializers import QuerySerializer, UserSerializer, AttributeSerializer, UserAttributeSerializer, MunicipalitySerializer, SchoolSerializer, RoleSerializer, AttendanceSerializer
+from roledb.models import User, Attribute, UserAttribute, Municipality, School, Role, Attendance
 
 
-class UserGetView(generics.RetrieveAPIView):
+class QueryView(generics.RetrieveAPIView):
   """ Returns information about one user.
 
   The ``username`` is global unique identifier for the user.
@@ -25,7 +26,7 @@ class UserGetView(generics.RetrieveAPIView):
   * no parameters are specified
   """
   queryset = User.objects.all()
-  serializer_class = UserSerializer
+  serializer_class = QuerySerializer
   lookup_field = 'username'
 
   def get_object(self):
@@ -41,4 +42,41 @@ class UserGetView(generics.RetrieveAPIView):
     obj = generics.get_object_or_404(qs, **filter_kwargs)
     self.check_object_permissions(self.request, obj)
     return obj
+
+
+class UserViewSet(viewsets.ModelViewSet):
+  queryset = User.objects.all()
+  serializer_class = UserSerializer
+
+
+class AttributeViewSet(viewsets.ReadOnlyModelViewSet):
+  queryset = Attribute.objects.all()
+  serializer_class = AttributeSerializer
+
+
+class UserAttributeViewSet(viewsets.ModelViewSet):
+  queryset = UserAttribute.objects.all()
+  serializer_class = UserAttributeSerializer
+
+
+class MunicipalityViewSet(viewsets.ModelViewSet):
+  queryset = Municipality.objects.all()
+  serializer_class = MunicipalitySerializer
+
+
+class SchoolViewSet(viewsets.ModelViewSet):
+  queryset = School.objects.all()
+  serializer_class = SchoolSerializer
+
+
+class RoleViewSet(viewsets.ReadOnlyModelViewSet):
+  queryset = Role.objects.all()
+  serializer_class = RoleSerializer
+
+
+class AttendanceViewSet(viewsets.ModelViewSet):
+  queryset = Attendance.objects.all()
+  serializer_class = AttendanceSerializer
+
+
 
