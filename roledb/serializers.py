@@ -1,6 +1,6 @@
 
 from rest_framework import serializers
-from roledb.models import User, Attribute, UserAttribute, Municipality, School, Role, Attendance
+from roledb.models import User, Attribute, UserAttribute, Municipality, School, Role, Attendance, Source
 
 
 class QuerySerializer(serializers.ModelSerializer):
@@ -43,18 +43,42 @@ class AttributeSerializer(serializers.ModelSerializer):
 
 
 class UserAttributeSerializer(serializers.ModelSerializer):
+  data_source = serializers.PrimaryKeyRelatedField(read_only=True)
+
   class Meta:
     model = UserAttribute
 
+  def save(self, *args, **kwargs):
+    username = self.context['request'].user.username
+    data_source_obj, _ = Source.objects.get_or_create(name=username)
+    self.object.data_source = data_source_obj
+    return super(UserAttributeSerializer, self).save(*args, **kwargs)
+
 
 class MunicipalitySerializer(serializers.ModelSerializer):
+  data_source = serializers.PrimaryKeyRelatedField(read_only=True)
+
   class Meta:
     model = Municipality
 
+  def save(self, *args, **kwargs):
+    username = self.context['request'].user.username
+    data_source_obj, _ = Source.objects.get_or_create(name=username)
+    self.object.data_source = data_source_obj
+    return super(MunicipalitySerializer, self).save(*args, **kwargs)
+
 
 class SchoolSerializer(serializers.ModelSerializer):
+  data_source = serializers.PrimaryKeyRelatedField(read_only=True)
+
   class Meta:
     model = School
+
+  def save(self, *args, **kwargs):
+    username = self.context['request'].user.username
+    data_source_obj, _ = Source.objects.get_or_create(name=username)
+    self.object.data_source = data_source_obj
+    return super(SchoolSerializer, self).save(*args, **kwargs)
 
 
 class RoleSerializer(serializers.ModelSerializer):
@@ -63,7 +87,14 @@ class RoleSerializer(serializers.ModelSerializer):
 
 
 class AttendanceSerializer(serializers.ModelSerializer):
+  data_source = serializers.PrimaryKeyRelatedField(read_only=True)
+
   class Meta:
     model = Attendance
 
+  def save(self, *args, **kwargs):
+    username = self.context['request'].user.username
+    data_source_obj, _ = Source.objects.get_or_create(name=username)
+    self.object.data_source = data_source_obj
+    return super(AttendanceSerializer, self).save(*args, **kwargs)
 

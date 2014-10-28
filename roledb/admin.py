@@ -26,8 +26,8 @@ class RoleAdmin(admin.ModelAdmin):
 
 
 class AttendanceAdmin(admin.ModelAdmin):
-    list_display = ('user', 'school', 'role', 'group', 'source')
-    list_filter = ('role', 'source')
+    list_display = ('user', 'school', 'role', 'group', 'data_source')
+    list_filter = ('role', 'data_source')
     search_fields = ('school__school_id', 'school__name', 'school__municipality__name', 'user__username', 'group',)
 
 
@@ -74,7 +74,7 @@ class UserAdmin(DjangoUserAdmin):
     search_fields = ('username', 'first_name', 'last_name', 'email')
     ordering = ('username',)
     filter_horizontal = ('groups', 'user_permissions')
-    inlines = [UserAttributeInline, AttendanceInline]    
+    inlines = [UserAttributeInline, AttendanceInline]
     form = UserChangeForm
     add_form = UserCreationForm
 
