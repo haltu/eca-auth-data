@@ -15,6 +15,7 @@ class Source(models.Model):
 
 class Municipality(models.Model):
   name = models.CharField(max_length=2048)
+  source = models.ForeignKey(Source)
 
   def __unicode__(self):
     return self.name
@@ -24,6 +25,7 @@ class School(models.Model):
   name = models.CharField(max_length=2048)
   school_id = models.CharField(max_length=2048)
   municipality = models.ForeignKey(Municipality, related_name='schools')
+  source = models.ForeignKey(Source)
 
   def __unicode__(self):
     return "%s / %s" % (self.name, self.municipality)
