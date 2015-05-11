@@ -1,0 +1,10 @@
+
+syntax: glob
+
+.git
+staticroot
+db.sqlite3
+build
+local_settings.py
+*.pyc
+*.swp
