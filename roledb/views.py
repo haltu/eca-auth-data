@@ -1,8 +1,10 @@
 
 from django.http import Http404
 from django.shortcuts import get_object_or_404
+from rest_framework import filters
 from rest_framework import generics
 from rest_framework import viewsets
+import django_filters
 from roledb.serializers import QuerySerializer, UserSerializer, AttributeSerializer, UserAttributeSerializer, MunicipalitySerializer, SchoolSerializer, RoleSerializer, AttendanceSerializer
 from roledb.models import User, Attribute, UserAttribute, Municipality, School, Role, Attendance
 
@@ -44,9 +46,20 @@ class QueryView(generics.RetrieveAPIView):
     return obj
 
 
+class UserFilter(django_filters.FilterSet):
+  school = django_filters.CharFilter(name='attendances__school__name')
+  group = django_filters.CharFilter(name='attendances__group')
+
+  class Meta:
+    model = User
+    fields = ['username', 'school', 'group']
+
+
 class UserViewSet(viewsets.ModelViewSet):
-  queryset = User.objects.all()
+  queryset = User.objects.all().distinct()
   serializer_class = UserSerializer
+  filter_backends = (filters.DjangoFilterBackend,)
+  filter_class = UserFilter
 
 
 class AttributeViewSet(viewsets.ReadOnlyModelViewSet):

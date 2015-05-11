@@ -100,3 +100,7 @@ REST_FRAMEWORK = {
     'PAGINATE_BY': 10
 }
 
+try:
+  from local_settings import *
+except ImportError:
+  pass

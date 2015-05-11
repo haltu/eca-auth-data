@@ -2,35 +2,19 @@
 Role database for EduCloud
 **************************
 
-Data as SAML attributes
-=======================
+The Role Database (RoleDB) does not have visible UI, only an API which can be queried the contents
+of the database.
 
-Data coming from RoleDB should be directly visible to all service providers as SAML attributes. There are two attributes:
+The RoleDB is an abstraction of actual data store, or multiple datastores, which contain user
+identity and role information.
 
-educloud.oid
-  This is same as the username field in the API.
-educloud.data
-  Contains whole JSON document coming from the API. It is base64 encoded.
 
 The API
 =======
 
-RoleDb has one endpoint ``/api/1/user?name=value`` which can be queried for the attributes. The result is JSON dict of data.
+Data returned from the API looks like this::
 
-Query is made by GET parameters. Only one parameter is allowed. ``Not found`` is returned if:
-
-  * the parameter name is not recognized
-  * multiple results would be returned (only one result is allowed)
-  * no parameters are specified
-
-In the query ``name`` is the parameter name used to filter users from the database. Name of the parameter is defined when new auth
-sources are registered to the IdP. Name of the parameter can contain only a-z chars.
-The list of valid filter names is available from IdP admins.
-The value for the filter parameter is UTF-8 as urlencoded string.
-
-For example, query ``/api/1/user?facebook_id=foo`` would give the following response::
-
-  { 
+  {
     "username": "123abc",
     "first_name": "Teppo",
     "last_name": "Testaaja",
@@ -39,6 +23,11 @@ For example, query ``/api/1/user?facebook_id=foo`` would give the following resp
         "school": "17392",
         "role": "teacher",
         "group": "7A"
+      },
+      {
+        "school": "17392",
+        "role": "teacher",
+        "group": "7B"
       }
     ]
     "attributes": [
@@ -70,12 +59,61 @@ group
 In addition to role data custom attributes can be added at runtime. These are installation specific and defined in
 the database.
 
+
+Authentication to the API
+-------------------------
+
 Authentication to the API is based on tokens. You should send ``Authorization: Token abcd1234`` header. For example::
 
   curl -H "Authorization: Token 9c5d6df27105387b586286b06684ac2dcdbf09d3"  http://foo.example.com/api/1/user/
 
 For debugging purposes you can also use session based authentication if
 you have credentials to access the admin pages. So if you can log into admin you can access the API with the same browser.
+
+
+Attribute query
+---------------
+
+The attribute query endpoint is meant to be used by the SAML IdP to query for the attributes of single user.
+
+RoleDb has endpoint ``/api/1/user?name=value`` which can be queried for the attributes. The result is JSON dict of data.
+
+Query is made by GET parameters. Only one parameter is allowed. ``Not found`` is returned if:
+
+  * the parameter name is not recognized
+  * multiple results would be returned (only one result is allowed)
+  * no parameters are specified
+
+In the query ``name`` is the parameter name used to filter users from the database. Name of the parameter is defined when new auth
+sources are registered to the IdP. Name of the parameter can contain only a-z chars.
+The list of valid filter names is available from IdP admins.
+The value for the filter parameter is UTF-8 as urlencoded string.
+
+For example, query could be: ``/api/1/user?facebook_id=foo``
+
+User search query
+-----------------
+
+User objects can be searched by ``school``, ``group`` and ``username`` attributes.
+
+Example query: ``/api/1/user/?school=Keskustan%20koulu&group=7A``
+
+This returns all matches.
+
+
+Data as SAML attributes
+=======================
+
+Data coming from RoleDB should be directly visible to all service providers as SAML attributes. There are two attributes:
+
+educloud.oid
+  This is same as the username field in the API.
+educloud.data
+  Contains whole JSON document coming from the API. It is base64 encoded.
+
+
+Sequence diagram for Educloud Pilot
+===================================
 
 .. image:: diagram.png
 
@@ -91,6 +129,7 @@ The IdP uses several authentication sources. For example Facebook and other LMS 
 all use different identifiers for users. RoleDB converts these identifiers to OppijaIDs or OIDs. OID is
 used by all SPs to identify the users. This is made possible by returning the OID in SAML assertions
 to SPs when they request authentication.
+
 
 Other notes
 ===========
