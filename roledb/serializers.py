@@ -34,16 +34,20 @@ class QuerySerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
   class Meta:
     model = User
-    fields = ('id', 'username', 'first_name', 'last_name')
+    lookup_field = 'username'
+    fields = ('username', 'first_name', 'last_name')
 
 
 class AttributeSerializer(serializers.ModelSerializer):
   class Meta:
     model = Attribute
+    lookup_field = 'name'
 
 
 class UserAttributeSerializer(serializers.ModelSerializer):
   data_source = serializers.PrimaryKeyRelatedField(read_only=True)
+  attribute = serializers.SlugRelatedField(slug_field='name', queryset=Attribute.objects.all())
+  user = serializers.SlugRelatedField(slug_field='username', queryset=User.objects.all())
 
   class Meta:
     model = UserAttribute
