@@ -64,13 +64,13 @@ class SchoolFactory(factory.django.DjangoModelFactory):
   school_id = factory.Sequence(lambda n: '{0}'.format(n))
   municipality = factory.SubFactory(MunicipalityFactory)
   data_source = factory.SubFactory(SourceFactory)
-  
+
 
 class AttributeFactory(factory.django.DjangoModelFactory):
   class Meta:
     model = models.Attribute
-  
-  name = factory.Sequence(lambda n: 'Attribute{0}'.format(n))
+
+  name = factory.Sequence(lambda n: 'attribute{0}'.format(n))
 
 
 class UserAttributeFactory(factory.django.DjangoModelFactory):

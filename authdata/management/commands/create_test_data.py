@@ -33,7 +33,7 @@ from authdata.tests import factories as f
 class Command(BaseCommand):
   help = """
   Creates a set of test data:
-  
+
   * 10000 users, random-generated username in OID format
   * 10 municipalities
   * 100 schools
@@ -42,10 +42,9 @@ class Command(BaseCommand):
   """
 
   def handle(self, *args, **options):
-    municipalities = []
     source = f.SourceFactory.create()
     attributes = f.AttributeFactory.create_batch(10)
-    roles = [f.RoleFactory.create(name='teacher'), f.RoleFactory.create(name='student')]
+    roles = [Role.objects.get_or_create(name='teacher'), Role.objects.get_or_create(name='student')]
     for m in xrange(10):
       muni = f.MunicipalityFactory.create(data_source=source)
       schools = f.SchoolFactory.create_batch(10, municipality=muni, data_source=source)
