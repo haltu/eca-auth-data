@@ -31,7 +31,7 @@ from collections import OrderedDict
 from django.core.management.base import BaseCommand, CommandError
 from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
-from roledb.models import User, Role, Attribute, UserAttribute, Municipality, School, Attendance, Source
+from authdata.models import User, Role, Attribute, UserAttribute, Municipality, School, Attendance, Source
 
 
 class Command(BaseCommand):

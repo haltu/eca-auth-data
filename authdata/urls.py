@@ -23,21 +23,25 @@
 # THE SOFTWARE.
 #
 
-from __future__ import unicode_literals
+from django.conf.urls import patterns, include, url
+from django.contrib import admin
+from rest_framework import routers
+from authdata.views import QueryView
+from authdata.views import UserViewSet, AttributeViewSet, UserAttributeViewSet, MunicipalityViewSet, SchoolViewSet, RoleViewSet, AttendanceViewSet
 
-from django.db import models, migrations
+router = routers.DefaultRouter()
+router.register(r'user', UserViewSet)
+router.register(r'attribute', AttributeViewSet)
+router.register(r'userattribute', UserAttributeViewSet)
+router.register(r'municipality', MunicipalityViewSet)
+router.register(r'school', SchoolViewSet)
+router.register(r'role', RoleViewSet)
+router.register(r'attendance', AttendanceViewSet)
 
 
-class Migration(migrations.Migration):
-
-    dependencies = [
-        ('roledb', '0001_initial'),
-    ]
-
-    operations = [
-        migrations.RenameField(
-            model_name='userattribute',
-            old_name='name',
-            new_name='attribute',
-        ),
-    ]
+urlpatterns = patterns('',
+    url(r'^api/1/user$', QueryView.as_view()), # This should be removed as "/user" and "/user/" are now different which is confusing. User "/query/" instead
+    url(r'^api/1/query$', QueryView.as_view()),
+    url(r'^api/1/', include(router.urls)),
+    url(r'^admin/', include(admin.site.urls)),
+)

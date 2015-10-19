@@ -26,15 +26,15 @@
 from django.utils.translation import ugettext, ugettext_lazy as _
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
-from roledb.forms import UserCreationForm, UserChangeForm
-from roledb.models import Municipality
-from roledb.models import School
-from roledb.models import Role
-from roledb.models import Attendance
-from roledb.models import Source
-from roledb.models import User
-from roledb.models import Attribute
-from roledb.models import UserAttribute
+from authdata.forms import UserCreationForm, UserChangeForm
+from authdata.models import Municipality
+from authdata.models import School
+from authdata.models import Role
+from authdata.models import Attendance
+from authdata.models import Source
+from authdata.models import User
+from authdata.models import Attribute
+from authdata.models import UserAttribute
 
 
 class MunicipalityAdmin(admin.ModelAdmin):

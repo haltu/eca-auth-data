@@ -25,7 +25,7 @@
 
 
 from rest_framework import serializers
-from roledb.models import User, Attribute, UserAttribute, Municipality, School, Role, Attendance, Source
+from authdata.models import User, Attribute, UserAttribute, Municipality, School, Role, Attendance, Source
 
 
 class QuerySerializer(serializers.ModelSerializer):
@@ -56,11 +56,25 @@ class QuerySerializer(serializers.ModelSerializer):
     return data
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(QuerySerializer):
+  def attribute_data(self, obj):
+    # attribute data is filtered. only attributes where source is requesting user's username are returned
+    data = []
+    if 'request' in self.context:
+      attribute_qs = obj.attributes.filter(data_source__name=self.context['request'].user.username)
+    else:
+      attribute_qs = obj.attributes.all()
+    for a in attribute_qs:
+      d = {}
+      d['name'] = a.attribute.name
+      d['value'] = a.value
+      data.append(d)
+    return data
+
   class Meta:
     model = User
     lookup_field = 'username'
-    fields = ('username', 'first_name', 'last_name')
+    fields = ('username','first_name','last_name','roles','attributes')
 
 
 class AttributeSerializer(serializers.ModelSerializer):

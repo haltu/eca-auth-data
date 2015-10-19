@@ -24,14 +24,17 @@
 #
 
 
+import datetime
+from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404
+from django.forms import ValidationError
 from rest_framework import filters
 from rest_framework import generics
 from rest_framework import viewsets
 import django_filters
-from roledb.serializers import QuerySerializer, UserSerializer, AttributeSerializer, UserAttributeSerializer, MunicipalitySerializer, SchoolSerializer, RoleSerializer, AttendanceSerializer
-from roledb.models import User, Attribute, UserAttribute, Municipality, School, Role, Attendance
+from authdata.serializers import QuerySerializer, UserSerializer, AttributeSerializer, UserAttributeSerializer, MunicipalitySerializer, SchoolSerializer, RoleSerializer, AttendanceSerializer
+from authdata.models import User, Attribute, UserAttribute, Municipality, School, Role, Attendance
 
 
 class QueryView(generics.RetrieveAPIView):
@@ -44,7 +47,8 @@ class QueryView(generics.RetrieveAPIView):
 
   Possible values for ``role`` are ``teacher`` and ``student``.
 
-  Query is made by GET parameters. Only one parameter is allowed.
+  Query is made by GET parameters. Only one parameter is allowed. The parameter
+  consists of an attribute name and an attribute value.
 
   ``Not found`` is returned if:
 
@@ -74,10 +78,24 @@ class QueryView(generics.RetrieveAPIView):
 class UserFilter(django_filters.FilterSet):
   school = django_filters.CharFilter(name='attendances__school__name')
   group = django_filters.CharFilter(name='attendances__group')
+  changed_at = django_filters.MethodFilter(action='timestamp_filter')
+
+  def timestamp_filter(self, queryset, value):
+    # TODO: this is unaware of removed UserAttributes
+    try:
+      tstamp = datetime.datetime.fromtimestamp(float(value))
+    except ValueError:
+      return queryset.none()
+    by_user = Q(modified__gte=tstamp)
+    by_user_attribute = Q(attributes__modified__gte=tstamp)
+    by_attribute_name = Q(attributes__attribute__modified__gte=tstamp)
+    by_attendance = Q(attendances__modified__gte=tstamp)
+    by_role_name = Q(attendances__role__modified__gte=tstamp)
+    return queryset.filter(by_user | by_user_attribute | by_attribute_name | by_attendance | by_role_name).distinct()
 
   class Meta:
     model = User
-    fields = ['username', 'school', 'group']
+    fields = ['username', 'school', 'group', 'changed_at']
 
 
 class UserViewSet(viewsets.ModelViewSet):

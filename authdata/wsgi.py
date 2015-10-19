@@ -24,7 +24,7 @@
 #
 
 """
-WSGI config for roledb project.
+WSGI config for auth-data project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
@@ -33,7 +33,7 @@ https://docs.djangoproject.com/en/1.7/howto/deployment/wsgi/
 """
 
 import os
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "roledb.production")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "authdata.production")
 
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()

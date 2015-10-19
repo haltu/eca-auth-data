@@ -29,7 +29,7 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.contrib.auth.hashers import UNUSABLE_PASSWORD_PREFIX
 
-from roledb.models import User
+from authdata.models import User
 
 
 class UserCreationForm(forms.ModelForm):

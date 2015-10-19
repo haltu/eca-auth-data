@@ -1,11 +1,11 @@
 
-Role database for EduCloud
-**************************
+Auth Data database for EduCloud
+*******************************
 
-The Role Database (RoleDB) does not have visible UI, only an API which can be queried the contents
+The Auth Data component does not have visible UI, only an API which can be queried the contents
 of the database.
 
-The RoleDB is an abstraction of actual data store, or multiple datastores, which contain user
+The Auth Data component is an abstraction of actual data store, or multiple datastores, which contain user
 identity and role information.
 
 
@@ -38,7 +38,7 @@ Data returned from the API looks like this::
     ]
   }
 
-User can have multiple roles, and also multiple roles in one school. As the RoleDB tries to model the real situation
+User can have multiple roles, and also multiple roles in one school. As the Auth Data service tries to model the real situation
 where one user can be teacher and student in different shools this has to be here. It is also possible to decide that
 only one role object per user is acceptable when the data is imported to the database.
 
@@ -76,7 +76,7 @@ Attribute query
 
 The attribute query endpoint is meant to be used by the SAML IdP to query for the attributes of single user.
 
-RoleDb has endpoint ``/api/1/user?name=value`` which can be queried for the attributes. The result is JSON dict of data.
+Auth Data has endpoint ``/api/1/query?name=value`` which can be queried for the attributes. The result is JSON dict of data.
 
 Query is made by GET parameters. Only one parameter is allowed. ``Not found`` is returned if:
 
@@ -89,22 +89,28 @@ sources are registered to the IdP. Name of the parameter can contain only a-z ch
 The list of valid filter names is available from IdP admins.
 The value for the filter parameter is UTF-8 as urlencoded string.
 
-For example, query could be: ``/api/1/user?facebook_id=foo``
+For example, query could be: ``/api/1/query?facebook_id=foo``
 
 User search query
 -----------------
 
-User objects can be searched by ``school``, ``group`` and ``username`` attributes.
+User objects can be searched by ``school``, ``group``, ``username`` and ``changed_at`` attributes.
 
-Example query: ``/api/1/user/?school=Keskustan%20koulu&group=7A``
+* ``school``, ``group`` and ``username`` are string parameters
+* ``changed_at`` is a POSIX timestamp parameter. Only records changed after
+  this timestamp will be returned
 
-This returns all matches.
+Example query: ``/api/1/user/?school=Keskustan%20koulu&group=7A&changed_at=1444398009``
+
+This returns all matches. The data returned is in the same format as the
+Attribute query data, with the exception that only attributes from the querying
+user's source are returned.
 
 
 Data as SAML attributes
 =======================
 
-Data coming from RoleDB should be directly visible to all service providers as SAML attributes. There are two attributes:
+Data coming from Auth Data should be directly visible to all service providers as SAML attributes. There are two attributes:
 
 educloud.oid
   This is same as the username field in the API.
@@ -120,13 +126,13 @@ Sequence diagram for Educloud Pilot
 The sequence diagram shows basic use cases in the Educloud pilot. It begins from a state where the user
 is already registered to the central Identity Provider (IdP) which is maintained by the Educloud.
 
-The Django project found in this repository is the RoleDB in the diagram. It provides the database for
+The Django project found in this repository is the Auth Data in the diagram. It provides the database for
 the attributes which are returned with SAML assertions to Service Providers (SP). It emulates
-the Opintopolku database which is shown in the diagram as optional step. Some day hopefully this RoleDb
+the Opintopolku database which is shown in the diagram as optional step. Some day hopefully this Auth Data service 
 can be replaced with Opintopolku.
 
 The IdP uses several authentication sources. For example Facebook and other LMS services. These auth sources
-all use different identifiers for users. RoleDB converts these identifiers to OppijaIDs or OIDs. OID is
+all use different identifiers for users. Auth Data converts these identifiers to OppijaIDs or OIDs. OID is
 used by all SPs to identify the users. This is made possible by returning the OID in SAML assertions
 to SPs when they request authentication.
 
@@ -175,14 +181,14 @@ Generated with www.websequencediagrams.com
     Facebook --> IdP: Auth info
   end
   
-  IdP -> RoleDB: Query attributes
+  IdP -> Auth Data: Query attributes
   
   opt New user registration or query data from Opinpolku
-    RoleDB -> Opinpolku: Query data
-    Opinpolku --> RoleDB: Return data
+    Auth Data -> Opinpolku: Query data
+    Opinpolku --> Auth Data: Return data
   end opt
   
-  RoleDB --> IdP: Return attributes
+  Auth Data --> IdP: Return attributes
   IdP -> LMS A: SAML assertion
   LMS A ->- User: Access granted
   
@@ -194,14 +200,14 @@ Generated with www.websequencediagrams.com
   User ->+ LMS A: Add and assign material
   LMS A ->+ Bazaar: Browse
   Bazaar -> IdP: SAML
-  IdP -> RoleDB: Query attributes
+  IdP -> Auth Data: Query attributes
   
   opt New user registration or query data from Opinpolku
-    RoleDB -> Opinpolku: Query data
-    Opinpolku --> RoleDB: Return data
+    Auth Data -> Opinpolku: Query data
+    Opinpolku --> Auth Data: Return data
   end opt
   
-  RoleDB --> IdP: Return attributes
+  Auth Data --> IdP: Return attributes
   IdP --> Bazaar: SAML assertion
   
   note over Bazaar
@@ -231,14 +237,14 @@ Generated with www.websequencediagrams.com
   
   User ->+ CMS: Open material
   CMS -> IdP: SAML
-  IdP -> RoleDB: Query attributes
+  IdP -> Auth Data: Query attributes
   
   opt New user registration or query data from Opinpolku
-    RoleDB -> Opinpolku: Query data
-    Opinpolku --> RoleDB: Return data
+    Auth Data -> Opinpolku: Query data
+    Opinpolku --> Auth Data: Return data
   end opt
   
-  RoleDB --> IdP: Return attributes
+  Auth Data --> IdP: Return attributes
   IdP --> CMS: SAML assertion
   
   CMS -> User: Show material
@@ -256,14 +262,14 @@ Generated with www.websequencediagrams.com
   
   User ->+ LMS B: Initiate login
   LMS B -> IdP: SAML
-  IdP -> RoleDB: Query attributes
+  IdP -> Auth Data: Query attributes
   
   opt New user registration or query data from Opinpolku
-    RoleDB -> Opinpolku: Query data
-    Opinpolku --> RoleDB: Return data
+    Auth Data -> Opinpolku: Query data
+    Opinpolku --> Auth Data: Return data
   end opt
   
-  RoleDB --> IdP: Return attributes
+  Auth Data --> IdP: Return attributes
   IdP --> LMS B: SAML assertion
   LMS B ->- User: Access denied
 

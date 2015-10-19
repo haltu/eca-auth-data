@@ -1,5 +1,3 @@
-# -*- encoding: utf-8 -*-
-
 # The MIT License (MIT)
 #
 # Copyright (c) 2014-2015 Haltu Oy, http://haltu.fi
@@ -22,37 +20,3 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-
-from __future__ import unicode_literals
-
-from django.db import models, migrations
-
-
-class Migration(migrations.Migration):
-
-    dependencies = [
-        ('roledb', '0003_auto_20141028_2133'),
-    ]
-
-    operations = [
-        migrations.RenameField(
-            model_name='attendance',
-            old_name='source',
-            new_name='data_source',
-        ),
-        migrations.RenameField(
-            model_name='municipality',
-            old_name='source',
-            new_name='data_source',
-        ),
-        migrations.RenameField(
-            model_name='school',
-            old_name='source',
-            new_name='data_source',
-        ),
-        migrations.RenameField(
-            model_name='userattribute',
-            old_name='source',
-            new_name='data_source',
-        ),
-    ]

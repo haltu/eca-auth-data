@@ -24,7 +24,7 @@
 #
 
 """
-Django settings for roledb project.
+Django settings for auth-data project.
 
 For more information on this file, see
 https://docs.djangoproject.com/en/1.7/topics/settings/
@@ -60,7 +60,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'roledb',
+    'authdata',
     'rest_framework',
     'rest_framework.authtoken',
 )
@@ -75,9 +75,9 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
-ROOT_URLCONF = 'roledb.urls'
+ROOT_URLCONF = 'authdata.urls'
 
-WSGI_APPLICATION = 'roledb.wsgi.application'
+WSGI_APPLICATION = 'authdata.wsgi.application'
 
 
 # Database
@@ -113,7 +113,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticroot')
 
 # ----------------------------
 
-AUTH_USER_MODEL = 'roledb.User'
+AUTH_USER_MODEL = 'authdata.User'
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',

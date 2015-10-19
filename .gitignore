@@ -3,5 +3,6 @@ syntax: glob
 db.sqlite3
 *.pyc
 *.swp
+*.swo
 settings_local.py
 staticroot/

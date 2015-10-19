@@ -31,14 +31,22 @@ from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
 
 
-class Source(models.Model):
+class TimeStampedModel(models.Model):
+  created = models.DateTimeField(auto_now_add=True, default=timezone.now)
+  modified = models.DateTimeField(auto_now=True, default=timezone.now)
+
+  class Meta:
+    abstract = True
+
+
+class Source(TimeStampedModel):
   name = models.CharField(max_length=2048)
 
   def __unicode__(self):
     return self.name
 
 
-class Municipality(models.Model):
+class Municipality(TimeStampedModel):
   name = models.CharField(max_length=2048)
   data_source = models.ForeignKey(Source)
 
@@ -46,7 +54,7 @@ class Municipality(models.Model):
     return self.name
 
 
-class School(models.Model):
+class School(TimeStampedModel):
   name = models.CharField(max_length=2048)
   school_id = models.CharField(max_length=2048)
   municipality = models.ForeignKey(Municipality, related_name='schools')
@@ -56,18 +64,18 @@ class School(models.Model):
     return "%s / %s" % (self.name, self.municipality)
 
 
-class User(AbstractUser):
+class User(TimeStampedModel, AbstractUser):
   pass
 
 
-class Attribute(models.Model):
+class Attribute(TimeStampedModel):
   name = models.CharField(max_length=2048, blank=True, null=True, default=None)
 
   def __unicode__(self):
     return self.name
 
 
-class UserAttribute(models.Model):
+class UserAttribute(TimeStampedModel):
   user = models.ForeignKey(User, related_name='attributes')
   attribute = models.ForeignKey(Attribute)
   value = models.CharField(max_length=2048, blank=True, null=True, default=None)
@@ -77,14 +85,14 @@ class UserAttribute(models.Model):
     return "%s: %s" % (self.attribute, self.value)
 
 
-class Role(models.Model):
+class Role(TimeStampedModel):
   name = models.CharField(max_length=2048)
 
   def __unicode__(self):
     return self.name
 
 
-class Attendance(models.Model):
+class Attendance(TimeStampedModel):
   user = models.ForeignKey(User, related_name='attendances')
   school = models.ForeignKey(School, related_name='users')
   role = models.ForeignKey(Role)
