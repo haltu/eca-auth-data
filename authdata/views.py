@@ -91,7 +91,9 @@ class UserFilter(django_filters.FilterSet):
     by_attribute_name = Q(attributes__attribute__modified__gte=tstamp)
     by_attendance = Q(attendances__modified__gte=tstamp)
     by_role_name = Q(attendances__role__modified__gte=tstamp)
-    return queryset.filter(by_user | by_user_attribute | by_attribute_name | by_attendance | by_role_name).distinct()
+    # SELECT DISTINCT ON ("authdata_user"."id") - makes this query perform a lot faster,
+    # but is ONLY compatible with PostgreSQL!
+    return queryset.filter(by_user | by_user_attribute | by_attribute_name | by_attendance | by_role_name).distinct('id')
 
   class Meta:
     model = User
