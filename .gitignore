@@ -5,4 +5,5 @@ db.sqlite3
 *.swp
 *.swo
 settings_local.py
+local_settings.py
 staticroot/
