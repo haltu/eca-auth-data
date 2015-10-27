@@ -23,13 +23,13 @@ Data returned from the API looks like this::
         "school": "17392",
         "role": "teacher",
         "group": "7A",
-        "municipality": "Example Municipality"
+        "municipality": "1234567-8"
       },
       {
         "school": "17392",
         "role": "teacher",
         "group": "7B",
-        "municipality": "Example Municipality"
+        "municipality": "1234567-8"
       }
     ]
     "attributes": [

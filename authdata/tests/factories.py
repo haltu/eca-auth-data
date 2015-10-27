@@ -53,6 +53,7 @@ class MunicipalityFactory(factory.django.DjangoModelFactory):
     model = models.Municipality
 
   name = factory.Sequence(lambda n: 'Municipality{0}'.format(n))
+  municipality_id = factory.fuzzy.FuzzyText(length=7, chars=string.digits, suffix='-8')
   data_source = factory.SubFactory(SourceFactory)
 
 

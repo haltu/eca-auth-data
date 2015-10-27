@@ -48,6 +48,7 @@ class Source(TimeStampedModel):
 
 class Municipality(TimeStampedModel):
   name = models.CharField(max_length=2048)
+  municipality_id = models.CharField(max_length=2048)
   data_source = models.ForeignKey(Source)
 
   def __unicode__(self):

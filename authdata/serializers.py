@@ -43,7 +43,7 @@ class QuerySerializer(serializers.ModelSerializer):
       d['school'] = a.school.school_id
       d['group'] = a.group
       d['role'] = a.role.name
-      d['municipality'] = a.school.municipality.name
+      d['municipality'] = a.school.municipality.municipality_id
       data.append(d)
     return data
 
