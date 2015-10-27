@@ -22,12 +22,14 @@ Data returned from the API looks like this::
       {
         "school": "17392",
         "role": "teacher",
-        "group": "7A"
+        "group": "7A",
+        "municipality": "Example Municipality"
       },
       {
         "school": "17392",
         "role": "teacher",
-        "group": "7B"
+        "group": "7B",
+        "municipality": "Example Municipality"
       }
     ]
     "attributes": [
