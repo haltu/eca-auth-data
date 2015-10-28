@@ -124,7 +124,7 @@ REST_FRAMEWORK = {
     ),
     'PAGINATE_BY': 10,
     'PAGINATE_BY_PARAM': 'page_size',  # Allow client to override, using `?page_size=xxx`.
-    'MAX_PAGINATE_BY': 100
+    'MAX_PAGINATE_BY': 1000
 }
 
 try:
