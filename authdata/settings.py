@@ -127,6 +127,10 @@ REST_FRAMEWORK = {
     'MAX_PAGINATE_BY': 1000
 }
 
+#'ldap_test_id': ['authdata.external_sources', 'TestLDAPDataSource', 'address', 'username', 'password'],
+AUTH_EXTERNAL_SOURCES = {
+}
+
 try:
   from local_settings import *
 except ImportError:

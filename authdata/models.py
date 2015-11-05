@@ -104,3 +104,20 @@ class Attendance(TimeStampedModel):
     return "%s: %s / %s" % (self.role, self.school.name, self.school.municipality.name)
 
 
+class ExternalDataSource(object):
+  """
+  An external user attribute source. The source is identified by a specific
+  attribute name, which is configured in the project settings.
+
+  This is an abstract interface class.
+  """
+
+  def get_data(self, attribute, value):
+    """
+    Get user data based on attribute query.
+
+    attribute: attribute name passed by Auth Proxy
+    value: attribute value passed by Auth Proxy
+    """
+    raise NotImplementedError
+

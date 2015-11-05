@@ -25,10 +25,12 @@
 
 
 import datetime
+import importlib
 from django.db.models import Q
-from django.http import Http404
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.forms import ValidationError
+from django.conf import settings
 from rest_framework import filters
 from rest_framework import generics
 from rest_framework import viewsets
@@ -59,6 +61,21 @@ class QueryView(generics.RetrieveAPIView):
   queryset = User.objects.all()
   serializer_class = QuerySerializer
   lookup_field = 'username'
+
+  def get(self, request, *args, **kwargs):
+    for attr in request.GET.keys():
+      if attr in settings.AUTH_EXTERNAL_SOURCES:
+        source = settings.AUTH_EXTERNAL_SOURCES[attr]
+        try:
+          handler_module = importlib.import_module(source[0])
+          handler = getattr(handler_module, source[1])(server=source[2], username=source[3], password=source[4])
+          return JsonResponse(handler.get_data(attr, request.GET.get(attr)))
+        except ImportError as e:
+          # TODO: log this, error handling
+          # flow back to normal implementation most likely return empty
+          pass
+
+    return super(QueryView, self).get(request, *args, **kwargs)
 
   def get_object(self):
     qs = self.filter_queryset(self.get_queryset())
