@@ -74,17 +74,17 @@ class TestLDAPDataSource(LDAPDataSource):
   def get_data(self, attribute, value):
     query_result = self.query(self.ldap_filter.format(value=value))
     dn_parts = query_result[0].split(',')
-    username = query_result[1]['cn']
-    first_name = query_result[1]['givenName']
-    last_name = query_result[1]['sn']
+    username = query_result[1]['cn'][0]
+    first_name = query_result[1]['givenName'][0]
+    last_name = query_result[1]['sn'][0]
     attributes = {
       attribute: value
     }
     roles = [{
       'school': dn_parts[3].strip("ou="),
-      'role': query_result[1]['title'],
+      'role': query_result[1]['title'][0],
       'municipality': dn_parts[4].strip("ou="),
-      'group': query_result[1].get('departmentNumber', '')
+      'group': query_result[1].get('departmentNumber', [''])[0]
     }]
     return {
       'username': username,
@@ -93,4 +93,7 @@ class TestLDAPDataSource(LDAPDataSource):
       'roles': roles,
       'attributes': attributes
     }
+
+
+# vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
 
