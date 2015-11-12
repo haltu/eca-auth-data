@@ -75,7 +75,8 @@ class TestLDAPDataSource(LDAPDataSource):
     first_name = query_result[1]['givenName'][0]
     last_name = query_result[1]['sn'][0]
     attributes = [{
-      attribute: value
+      'name': attribute,
+      'value': value
     }]
     roles = [{
       'school': dn_parts[3].strip("ou="),
