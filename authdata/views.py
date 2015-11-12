@@ -34,6 +34,7 @@ from django.conf import settings
 from rest_framework import filters
 from rest_framework import generics
 from rest_framework import viewsets
+from rest_framework.response import Response
 import django_filters
 from authdata.serializers import QuerySerializer, UserSerializer, AttributeSerializer, UserAttributeSerializer, MunicipalitySerializer, SchoolSerializer, RoleSerializer, AttendanceSerializer
 from authdata.models import User, Attribute, UserAttribute, Municipality, School, Role, Attendance
@@ -69,7 +70,7 @@ class QueryView(generics.RetrieveAPIView):
         try:
           handler_module = importlib.import_module(source[0])
           handler = getattr(handler_module, source[1])(server=source[2], username=source[3], password=source[4])
-          return JsonResponse(handler.get_data(attr, request.GET.get(attr)))
+          return Response(handler.get_data(attr, request.GET.get(attr)))
         except ImportError as e:
           # TODO: log this, error handling
           # flow back to normal implementation most likely return empty
