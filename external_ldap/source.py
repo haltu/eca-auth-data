@@ -39,6 +39,12 @@ class LDAPDataSource(ExternalDataSource):
     ldap_password: password for binding
     ldap_base_dn: base distinguished name for the queries
 
+  KWARGS dictionary in configuration should be in the format:
+    {
+      'host': connection string for ldap server,
+      'username': name to bind as,
+      'password': password
+    }
   """
   ldap_server = None
   ldap_username = None
@@ -46,6 +52,12 @@ class LDAPDataSource(ExternalDataSource):
   ldap_base_dn = None
 
   connection = None
+
+  def __init__(self, host, username, password, *args, **kwargs):
+    self.ldap_server = host
+    self.ldap_username = username
+    self.ldap_password = password
+    super(LDAPDataSource, self).__init__(*args, **kwargs)
 
   def connect(self):
     """
@@ -67,7 +79,6 @@ class LDAPDataSource(ExternalDataSource):
       self.connect()
     # TODO: LDAP error handling
     # TODO: must get exactly one result
-    print self.ldap_base_dn, query_filter, ldap.SCOPE_SUBTREE
     return self.connection.search_s(self.ldap_base_dn, filterstr=query_filter, scope=ldap.SCOPE_SUBTREE)[0]
 
 

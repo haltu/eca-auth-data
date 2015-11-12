@@ -69,7 +69,7 @@ class QueryView(generics.RetrieveAPIView):
         source = settings.AUTH_EXTERNAL_SOURCES[attr]
         try:
           handler_module = importlib.import_module(source[0])
-          handler = getattr(handler_module, source[1])(server=source[2], username=source[3], password=source[4])
+          handler = getattr(handler_module, source[1])(**source[2])
           return Response(handler.get_data(attr, request.GET.get(attr)))
         except ImportError as e:
           # TODO: log this, error handling

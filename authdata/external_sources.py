@@ -58,10 +58,7 @@ class TestLDAPDataSource(LDAPDataSource):
 
   """
 
-  def __init__(self, server, username, password, *args, **kwargs):
-    self.ldap_server = server
-    self.ldap_username = username
-    self.ldap_password = password
+  def __init__(self, *args, **kwargs):
     self.ldap_base_dn = 'ou=KuntaYksi,dc=mpass-test,dc=csc,dc=fi'
     self.ldap_filter = "(&(uid={value})(objectclass=inetOrgPerson))"
     """
