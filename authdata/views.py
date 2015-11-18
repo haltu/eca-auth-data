@@ -127,8 +127,10 @@ class UserViewSet(viewsets.ModelViewSet):
 
   def list(self, request, *args, **kwargs):
     print request.GET
-    if 'municipality' in request.GET and request.GET['municipality'] in settings.AUTH_EXTERNAL_MUNICIPALITY_BINDING:
-      source = settings.AUTH_EXTERNAL_SOURCES[settings.AUTH_EXTERNAL_MUNICIPALITY_BINDING[request.GET['municipality']]]
+    if 'municipality' in request.GET and request.GET['municipality'].lower() in [binding.lower() for binding in settings.AUTH_EXTERNAL_MUNICIPALITY_BINDING.keys()]:
+      for name, binding in settings.AUTH_EXTERNAL_MUNICIPALITY_BINDING.iteritems():
+        if name.lower() == request.GET['municipality'].lower():
+          source = settings.AUTH_EXTERNAL_SOURCES[binding]
       print "PING"
       try:
         handler_module = importlib.import_module(source[0])
@@ -139,7 +141,7 @@ class UserViewSet(viewsets.ModelViewSet):
         # flow back to normal implementation most likely return empty
         pass
 
-    return super(QueryView, self).get(request, *args, **kwargs)
+    return super(UserViewSet, self).list(request, *args, **kwargs)
 
 
 class AttributeViewSet(viewsets.ReadOnlyModelViewSet):
