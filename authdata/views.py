@@ -94,8 +94,9 @@ class QueryView(generics.RetrieveAPIView):
 
 
 class UserFilter(django_filters.FilterSet):
-  school = django_filters.CharFilter(name='attendances__school__name')
-  group = django_filters.CharFilter(name='attendances__group')
+  municipality = django_filters.CharFilter(name='attendances__school__municipality__name', lookup_type='iexact')
+  school = django_filters.CharFilter(name='attendances__school__school_name', lookup_type='iexact')
+  group = django_filters.CharFilter(name='attendances__group', lookup_type='iexact')
   changed_at = django_filters.MethodFilter(action='timestamp_filter')
 
   def timestamp_filter(self, queryset, value):
