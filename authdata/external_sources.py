@@ -58,6 +58,36 @@ class TestLDAPDataSource(LDAPDataSource):
 
   """
 
+  municipality_id_map = {
+    'KuntaYksi': '1234567-8'
+  }
+
+  class _schoolid_generator():
+    """
+    generator for fake school ids
+    """
+    @classmethod
+    def get(cls, name, default=None):
+      import string
+      num = name.strip(string.ascii_letters)
+      num = int(num)
+      return '%05d' % num
+
+  school_id_map = _schoolid_generator
+
+  #'LdapKoulu1': '00001',
+  #'LdapKoulu2': '00002',
+  #'LdapKoulu3': '00003',
+  #'LdapKoulu4': '00004',
+  #'LdapKoulu5': '00005',
+  #'LdapKoulu6': '00006',
+  #'LdapKoulu7': '00007',
+  #'LdapKoulu8': '00008',
+  #'LdapKoulu9': '00009',
+  #'LdapKoulu10': '00010',
+  #'LdapKoulu11': '00011',
+  # etc...
+
   def __init__(self, *args, **kwargs):
     self.ldap_base_dn = 'ou=KuntaYksi,dc=mpass-test,dc=csc,dc=fi'
     self.ldap_filter = "(&(uid={value})(objectclass=inetOrgPerson))"
@@ -112,9 +142,9 @@ class TestLDAPDataSource(LDAPDataSource):
         # TODO: what attributes should be returned from LDAP?
       ]
       roles = [{
-        'school': dn_parts[3].strip("ou="),
+        'school': self.get_school_id(dn_parts[3].strip("ou=")),
         'role': result[1]['title'][0],
-        'municipality': dn_parts[4].strip("ou="),
+        'municipality': self.get_municipality_id(dn_parts[4].strip("ou=")),
         'group': result[1].get('departmentNumber', [''])[0]
       }]
       response.append({

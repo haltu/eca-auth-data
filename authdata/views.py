@@ -131,7 +131,6 @@ class UserViewSet(viewsets.ModelViewSet):
       for binding_name, binding in settings.AUTH_EXTERNAL_MUNICIPALITY_BINDING.iteritems():
         if binding_name.lower() == request.GET['municipality'].lower():
           source = settings.AUTH_EXTERNAL_SOURCES[binding]
-      print "PING"
       try:
         handler_module = importlib.import_module(source[0])
         handler = getattr(handler_module, source[1])(**source[2])

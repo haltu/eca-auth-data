@@ -121,3 +121,11 @@ class ExternalDataSource(object):
     """
     raise NotImplementedError
 
+  def get_user_data(self, request):
+    """
+    Query for a user listing.
+
+    request: the request object containing GET-parameters for filtering the query
+    """
+    raise NotImplementedError
+

@@ -53,11 +53,26 @@ class LDAPDataSource(ExternalDataSource):
 
   connection = None
 
+  municipality_id_map = {
+    #'municipality': '1234567-8',
+  }
+
+  school_id_map = {
+    #'school': '00001',
+  }
+
   def __init__(self, host, username, password, *args, **kwargs):
     self.ldap_server = host
     self.ldap_username = username
     self.ldap_password = password
     super(LDAPDataSource, self).__init__(*args, **kwargs)
+
+
+  def get_municipality_id(self, name):
+    return self.municipality_id_map.get(name, None)
+
+  def get_school_id(self, name):
+    return self.school_id_map.get(name, None)
 
   def connect(self):
     """
