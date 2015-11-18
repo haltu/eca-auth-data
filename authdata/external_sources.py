@@ -69,7 +69,7 @@ class TestLDAPDataSource(LDAPDataSource):
     super(TestLDAPDataSource, self).__init__(*args, **kwargs)
 
   def get_data(self, attribute, value):
-    query_result = self.query(self.ldap_filter.format(value=value))
+    query_result = self.query(self.ldap_filter.format(value=value))[0]
     dn_parts = query_result[0].split(',')
     username = query_result[1]['cn'][0]
     first_name = query_result[1]['givenName'][0]
@@ -92,6 +92,39 @@ class TestLDAPDataSource(LDAPDataSource):
       'attributes': attributes
     }
 
+  def get_user_data(self, request):
+    ldap_filter = "objectclass=inetOrgPerson"
+    query_base = self.ldap_base_dn
+    if 'school' in request.GET:
+      self.ldap_base_dn = 'ou=%s,%s' % (request.GET['school'], query_base)
+    if 'group' in request.GET and request.GET['group'] != '':
+      ldap_filter = '&((departmentNumber=%s)(%s))' % (request.GET['group'], ldap_filter)
+    print "query_base", self.ldap_base_dn, "ldap_filter", ldap_filter
+    query_results = self.query(ldap_filter)
+    response = []
+
+    for result in query_results:
+      dn_parts = result[0].split(',')
+      username = result[1]['cn'][0]
+      first_name = result[1]['givenName'][0]
+      last_name = result[1]['sn'][0]
+      attributes = [
+        # TODO: what attributes should be returned from LDAP?
+      ]
+      roles = [{
+        'school': dn_parts[3].strip("ou="),
+        'role': result[1]['title'][0],
+        'municipality': dn_parts[4].strip("ou="),
+        'group': result[1].get('departmentNumber', [''])[0]
+      }]
+      response.append({
+        'username': username,
+        'first_name': first_name,
+        'last_name': last_name,
+        'roles': roles,
+        'attributes': attributes
+      })
+    return response
 
 # vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
 

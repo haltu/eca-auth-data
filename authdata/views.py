@@ -65,8 +65,8 @@ class QueryView(generics.RetrieveAPIView):
 
   def get(self, request, *args, **kwargs):
     for attr in request.GET.keys():
-      if attr in settings.AUTH_EXTERNAL_SOURCES:
-        source = settings.AUTH_EXTERNAL_SOURCES[attr]
+      if attr in settings.AUTH_EXTERNAL_ATTRIBUTE_BINDING:
+        source = settings.AUTH_EXTERNAL_SOURCES[settings.AUTH_EXTERNAL_ATTRIBUTE_BINDING[attr]]
         try:
           handler_module = importlib.import_module(source[0])
           handler = getattr(handler_module, source[1])(**source[2])
@@ -124,6 +124,22 @@ class UserViewSet(viewsets.ModelViewSet):
   serializer_class = UserSerializer
   filter_backends = (filters.DjangoFilterBackend,)
   filter_class = UserFilter
+
+  def list(self, request, *args, **kwargs):
+    print request.GET
+    if 'municipality' in request.GET and request.GET['municipality'] in settings.AUTH_EXTERNAL_MUNICIPALITY_BINDING:
+      source = settings.AUTH_EXTERNAL_SOURCES[settings.AUTH_EXTERNAL_MUNICIPALITY_BINDING[request.GET['municipality']]]
+      print "PING"
+      try:
+        handler_module = importlib.import_module(source[0])
+        handler = getattr(handler_module, source[1])(**source[2])
+        return Response(handler.get_user_data(request))
+      except ImportError as e:
+        # TODO: log this, error handling
+        # flow back to normal implementation most likely return empty
+        pass
+
+    return super(QueryView, self).get(request, *args, **kwargs)
 
 
 class AttributeViewSet(viewsets.ReadOnlyModelViewSet):

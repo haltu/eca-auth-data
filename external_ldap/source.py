@@ -79,7 +79,7 @@ class LDAPDataSource(ExternalDataSource):
       self.connect()
     # TODO: LDAP error handling
     # TODO: must get exactly one result
-    return self.connection.search_s(self.ldap_base_dn, filterstr=query_filter, scope=ldap.SCOPE_SUBTREE)[0]
+    return self.connection.search_s(self.ldap_base_dn, filterstr=query_filter, scope=ldap.SCOPE_SUBTREE)
 
 
 # vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
