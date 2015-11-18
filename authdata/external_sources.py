@@ -98,7 +98,7 @@ class TestLDAPDataSource(LDAPDataSource):
     if 'school' in request.GET:
       self.ldap_base_dn = 'ou=%s,%s' % (request.GET['school'], query_base)
     if 'group' in request.GET and request.GET['group'] != '':
-      ldap_filter = '&((departmentNumber=%s)(%s))' % (request.GET['group'], ldap_filter)
+      ldap_filter = '(&(departmentNumber=%s)(%s))' % (request.GET['group'], ldap_filter)
     print "query_base", self.ldap_base_dn, "ldap_filter", ldap_filter
     query_results = self.query(ldap_filter)
     response = []
@@ -124,7 +124,14 @@ class TestLDAPDataSource(LDAPDataSource):
         'roles': roles,
         'attributes': attributes
       })
-    return response
+    # TODO: support actual paging via SimplePagedResultsControl
+
+    return {
+      'count': len(response),
+      'next': None,
+      'previous': None,
+      'results': response,
+    }
 
 # vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
 

@@ -127,9 +127,9 @@ class UserViewSet(viewsets.ModelViewSet):
 
   def list(self, request, *args, **kwargs):
     print request.GET
-    if 'municipality' in request.GET and request.GET['municipality'].lower() in [binding.lower() for binding in settings.AUTH_EXTERNAL_MUNICIPALITY_BINDING.keys()]:
-      for name, binding in settings.AUTH_EXTERNAL_MUNICIPALITY_BINDING.iteritems():
-        if name.lower() == request.GET['municipality'].lower():
+    if 'municipality' in request.GET and request.GET['municipality'].lower() in [binding_name.lower() for binding_name in settings.AUTH_EXTERNAL_MUNICIPALITY_BINDING.keys()]:
+      for binding_name, binding in settings.AUTH_EXTERNAL_MUNICIPALITY_BINDING.iteritems():
+        if binding_name.lower() == request.GET['municipality'].lower():
           source = settings.AUTH_EXTERNAL_SOURCES[binding]
       print "PING"
       try:
