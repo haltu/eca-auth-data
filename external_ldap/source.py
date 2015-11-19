@@ -67,7 +67,6 @@ class LDAPDataSource(ExternalDataSource):
     self.ldap_password = password
     super(LDAPDataSource, self).__init__(*args, **kwargs)
 
-
   def get_municipality_id(self, name):
     return self.municipality_id_map.get(name, None)
 

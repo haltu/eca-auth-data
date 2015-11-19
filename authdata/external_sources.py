@@ -28,6 +28,7 @@
 External data source implementations
 """
 
+import hashlib
 from external_ldap.source import LDAPDataSource
 
 
@@ -98,6 +99,13 @@ class TestLDAPDataSource(LDAPDataSource):
     """
     super(TestLDAPDataSource, self).__init__(*args, **kwargs)
 
+  def get_oid(self, username):
+    """
+    There is no OID information in this external source. Generate fake OID
+    from username.
+    """
+    return 'MPASSOID.%s' % hashlib.sha1('ldap_test' + username).hexdigest()
+
   def get_data(self, attribute, value):
     query_result = self.query(self.ldap_filter.format(value=value))[0]
     dn_parts = query_result[0].split(',')
@@ -115,7 +123,7 @@ class TestLDAPDataSource(LDAPDataSource):
       'group': query_result[1].get('departmentNumber', [''])[0]
     }]
     return {
-      'username': username,
+      'username': self.get_oid(username),
       'first_name': first_name,
       'last_name': last_name,
       'roles': roles,
@@ -148,7 +156,7 @@ class TestLDAPDataSource(LDAPDataSource):
         'group': result[1].get('departmentNumber', [''])[0]
       }]
       response.append({
-        'username': username,
+        'username': self.get_oid(username),
         'first_name': first_name,
         'last_name': last_name,
         'roles': roles,
