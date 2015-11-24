@@ -66,6 +66,7 @@ class QueryView(generics.RetrieveAPIView):
   def get(self, request, *args, **kwargs):
     for attr in request.GET.keys():
       if attr in settings.AUTH_EXTERNAL_ATTRIBUTE_BINDING:
+        # TODO: if user also exists in local db, he has been assigned additional attributes and they must be displayed
         source = settings.AUTH_EXTERNAL_SOURCES[settings.AUTH_EXTERNAL_ATTRIBUTE_BINDING[attr]]
         try:
           handler_module = importlib.import_module(source[0])
@@ -75,19 +76,23 @@ class QueryView(generics.RetrieveAPIView):
           # TODO: log this, error handling
           # flow back to normal implementation most likely return empty
           pass
-
+      break
     return super(QueryView, self).get(request, *args, **kwargs)
 
   def get_object(self):
     qs = self.filter_queryset(self.get_queryset())
     filter_kwargs = {}
-    for k,v in self.request.GET.iteritems():
-      a = get_object_or_404(Attribute.objects.all(), name=k)
-      filter_kwargs['attributes__attribute__name'] = a.name
-      filter_kwargs['attributes__value'] = v
-      break # only handle one GET variable for now
+    lookup = self.kwargs.get(self.lookup_field, None)
+    if lookup:
+      filter_kwargs = {self.lookup_field: lookup}
     else:
-      raise Http404
+      for k,v in self.request.GET.iteritems():
+        a = get_object_or_404(Attribute.objects.all(), name=k)
+        filter_kwargs['attributes__attribute__name'] = a.name
+        filter_kwargs['attributes__value'] = v
+        break # only handle one GET variable for now
+      else:
+        raise Http404
     obj = generics.get_object_or_404(qs, **filter_kwargs)
     self.check_object_permissions(self.request, obj)
     return obj
@@ -148,9 +153,20 @@ class AttributeViewSet(viewsets.ReadOnlyModelViewSet):
   serializer_class = AttributeSerializer
 
 
+class UserAttributeFilter(django_filters.FilterSet):
+  user = django_filters.CharFilter(name='user__username', lookup_type='exact')
+  attribute = django_filters.CharFilter(name='attribute__name', lookup_type='exact')
+
+  class Meta:
+    model = UserAttribute
+    fields = ['user', 'attribute']
+
+
 class UserAttributeViewSet(viewsets.ModelViewSet):
   queryset = UserAttribute.objects.all()
   serializer_class = UserAttributeSerializer
+  filter_backends = (filters.DjangoFilterBackend,)
+  filter_class = UserAttributeFilter
 
 
 class MunicipalityViewSet(viewsets.ModelViewSet):
