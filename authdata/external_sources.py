@@ -137,7 +137,6 @@ class TestLDAPDataSource(LDAPDataSource):
       self.ldap_base_dn = 'ou=%s,%s' % (request.GET['school'], query_base)
     if 'group' in request.GET and request.GET['group'] != '':
       ldap_filter = '(&(departmentNumber=%s)(%s))' % (request.GET['group'], ldap_filter)
-    print "query_base", self.ldap_base_dn, "ldap_filter", ldap_filter
     query_results = self.query(ldap_filter)
     response = []
 
@@ -154,6 +153,129 @@ class TestLDAPDataSource(LDAPDataSource):
         'role': result[1]['title'][0],
         'municipality': self.get_municipality_id(dn_parts[4].strip("ou=")),
         'group': result[1].get('departmentNumber', [''])[0]
+      }]
+      response.append({
+        'username': self.get_oid(username),
+        'first_name': first_name,
+        'last_name': last_name,
+        'roles': roles,
+        'attributes': attributes
+      })
+    # TODO: support actual paging via SimplePagedResultsControl
+
+    return {
+      'count': len(response),
+      'next': None,
+      'previous': None,
+      'results': response,
+    }
+
+
+class OuluLDAPDataSource(LDAPDataSource):
+  """
+  Required configuration parameters:
+    host
+    username
+    password
+    base_dn
+  """
+
+  municipality_id_map = {
+    'Oulu': 'placeholder_oulu_id'
+  }
+
+  class _schoolid_generator():
+    """
+    generator for fake school ids
+    """
+    @classmethod
+    def get(cls, name, default=None):
+      return 'placeholder_school_id_%s' % name
+
+  school_id_map = _schoolid_generator
+
+  def __init__(self, base_dn, *args, **kwargs):
+    self.ldap_base_dn = base_dn
+    self.ldap_filter = "(sAMAccountName={value})"
+    """
+    ldap_filter = Filter for finding the required user in an LDAP query,
+                  for example "(&(attribute={value})(objectclass=inetOrgPerson))"
+                  Query will substitue {value} with Auth Proxy's attribute query value.
+    """
+    super(OuluLDAPDataSource, self).__init__(*args, **kwargs)
+
+  def get_oid(self, username):
+    """
+    There is no OID information in this external source. Generate fake OID
+    from username.
+    """
+    return 'MPASSOID.%s' % hashlib.sha1('ad_oulu' + username).hexdigest()
+
+  def get_username(self, query_result):
+    return query_result[1]['sAMAccountName'][0]
+
+  def get_first_name(self, query_result):
+    return query_result[1].get('givenName', [u''])[0]
+
+  def get_last_name(self, query_result):
+    return query_result[1].get('sn', [u''])[0]
+
+  def get_municipality(self):
+    return u'Oulu'
+
+  def get_school(self, query_result):
+    return query_result[1].get('physicalDeliveryOfficeName', [u''])[0]
+
+  def get_role(self, query_result):
+    return query_result[1].get('title', [u''])[0]
+
+  def get_group(self, query_result):
+    return query_result[1].get('department', [u''])[0]
+
+  def get_data(self, attribute, value):
+    query_result = self.query(self.ldap_filter.format(value=value))[0]
+    username = self.get_username(query_result)
+    first_name = self.get_first_name(query_result)
+    last_name = self.get_last_name(query_result)
+    attributes = [{
+      'name': attribute,
+      'value': value
+    }]
+    roles = [{
+      'school': self.get_school(query_result),
+      'role': self.get_role(query_result),
+      'municipality': self.get_municipality(),
+      'group': self.get_group(query_result),
+    }]
+    return {
+      'username': self.get_oid(username),
+      'first_name': first_name,
+      'last_name': last_name,
+      'roles': roles,
+      'attributes': attributes
+    }
+
+  def get_user_data(self, request):
+    ldap_filter = "(&(objectCategory=person)(objectClass=user))"
+    if 'school' in request.GET:
+      ldap_filter = '(&(physicalDeliveryOfficeName={school}){filter_base})'.format(school=request.GET['school'], filter_base=ldap_filter)
+    if 'group' in request.GET and request.GET['group'] != '':
+      ldap_filter = '(&(department={group}){filter_base})'.format(group=request.GET['group'], filter_base=ldap_filter)
+    query_results = self.query(ldap_filter)
+    response = []
+
+    for query_result in query_results:
+      username = self.get_username(query_result)
+      first_name = self.get_first_name(query_result)
+      last_name = self.get_last_name(query_result)
+      attributes = [
+        # TODO: what attributes should be returned from LDAP?
+      ]
+      roles = [{
+        'school': self.get_school(query_result),
+        'role': self.get_role(query_result),
+        'municipality': self.get_municipality(),
+        'group': self.get_group(query_result),
       }]
       response.append({
         'username': self.get_oid(username),
