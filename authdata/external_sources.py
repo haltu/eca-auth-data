@@ -107,7 +107,10 @@ class TestLDAPDataSource(LDAPDataSource):
     return 'MPASSOID.%s' % hashlib.sha1('ldap_test' + username).hexdigest()
 
   def get_data(self, attribute, value):
-    query_result = self.query(self.ldap_filter.format(value=value))[0]
+    try:
+      query_result = self.query(self.ldap_filter.format(value=value))[0]
+    except IndexError:
+      return None
     dn_parts = query_result[0].split(',')
     username = query_result[1]['cn'][0]
     first_name = query_result[1]['givenName'][0]
@@ -274,7 +277,10 @@ class OuluLDAPDataSource(LDAPDataSource):
     return query_result[1].get('department', [u''])[0]
 
   def get_data(self, attribute, value):
-    query_result = self.query(self.ldap_filter.format(value=value))[0]
+    try:
+      query_result = self.query(self.ldap_filter.format(value=value))[0]
+    except IndexError:
+      return None
     username = self.get_username(query_result)
     first_name = self.get_first_name(query_result)
     last_name = self.get_last_name(query_result)

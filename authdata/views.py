@@ -27,9 +27,8 @@
 import datetime
 import importlib
 from django.db.models import Q
-from django.http import Http404, HttpResponse, JsonResponse
+from django.http import Http404
 from django.shortcuts import get_object_or_404
-from django.forms import ValidationError
 from django.conf import settings
 from rest_framework import filters
 from rest_framework import generics
@@ -37,7 +36,7 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 import django_filters
 from authdata.serializers import QuerySerializer, UserSerializer, AttributeSerializer, UserAttributeSerializer, MunicipalitySerializer, SchoolSerializer, RoleSerializer, AttendanceSerializer
-from authdata.models import User, Attribute, UserAttribute, Municipality, School, Role, Attendance
+from authdata.models import User, Attribute, UserAttribute, Municipality, School, Role, Attendance, Source
 
 
 class QueryView(generics.RetrieveAPIView):
@@ -66,12 +65,26 @@ class QueryView(generics.RetrieveAPIView):
   def get(self, request, *args, **kwargs):
     for attr in request.GET.keys():
       if attr in settings.AUTH_EXTERNAL_ATTRIBUTE_BINDING:
-        # TODO: if user also exists in local db, he has been assigned additional attributes and they must be displayed
         source = settings.AUTH_EXTERNAL_SOURCES[settings.AUTH_EXTERNAL_ATTRIBUTE_BINDING[attr]]
         try:
           handler_module = importlib.import_module(source[0])
           handler = getattr(handler_module, source[1])(**source[2])
-          return Response(handler.get_data(attr, request.GET.get(attr)))
+          user_data = handler.get_data(attr, request.GET.get(attr))
+          if user_data is None:
+            # queried user does not exist in the external source
+            raise Http404
+          # Find or create user in local db to access UserAttributes
+          user_obj, c = User.objects.get_or_create(username=user_data['username'])
+          if c:
+            # New User was created. Add external source as UserAttribute.
+            attr_obj = Attribute.objects.get_or_create(name=attr)
+            # TODO: source?
+            datasource_obj = Source.objects.get_or_create(name=request.user.username)
+            user_obj.attributes.create(attribute=attr_obj, value=request.GET.get(attr), data_source=datasource_obj)
+          for user_attribute in user_obj.attributes.all():
+            # Add attributes to user data
+            user_data['attributes'][user_attribute.attribute.name] = user_attribute.value
+          return Response(user_data)
         except ImportError as e:
           # TODO: log this, error handling
           # flow back to normal implementation most likely return empty
