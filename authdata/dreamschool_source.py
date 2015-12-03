@@ -1,0 +1,277 @@
+
+# -*- coding: utf-8 -*-
+
+# The MIT License (MIT)
+#
+# Copyright (c) 2014-2015 Haltu Oy, http://haltu.fi
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+
+"""
+Dreamschool external data source
+"""
+
+import logging
+import hashlib
+import json
+import requests
+from django.conf import settings
+
+LOG = logging.getLogger(__name__)
+
+# Example response from Dreamschool
+# {
+#    "meta": {
+#        "limit": 0,
+#        "offset": 0,
+#        "total_count": 1
+#    },
+#    "objects": [
+#        {
+#            "email": "foo.bar@unelmakoulu.fi",
+#            "first_name": "Foo",
+#            "id": "123",
+#            "last_name": "Bar",
+#            "organisations": [
+#                {
+#                    "created": "2014-03-12T19:21:47.403524",
+#                    "id": "3",
+#                    "modified": "2015-08-10T12:37:54.719312",
+#                    "name": "Organisation",
+#                    "override_username_cleanup": false,
+#                    "registration_allowed": false,
+#                    "resource_uri": "/api/2/organisation/3/",
+#                    "source": "zap",
+#                    "title": "Organisation Name"
+#                }
+#            ],
+#            "phone_number": "+3581234567",
+#            "picture_url": "https://id.dreamschool.fi/media/avatar/foo.png",
+#            "resource_uri": "/api/2/user/123/",
+#            "roles": [
+#                {
+#                    "created": "2014-03-12T19:21:47.403524",
+#                    "id": "1",
+#                    "modified": "2015-10-13T14:10:54.732225",
+#                    "name": "teacher",
+#                    "official": true,
+#                    "organisation": {
+#                        "created": "2014-03-12T19:21:47.403524",
+#                        "id": "3",
+#                        "modified": "2015-08-10T12:37:54.719312",
+#                        "name": "foo",
+#                        "override_username_cleanup": false,
+#                        "registration_allowed": false,
+#                        "resource_uri": "/api/2/organisation/3/",
+#                        "source": "zap",
+#                        "title": "Organisation Name"
+#                    },
+#                    "permissions": [
+#                        {
+#                            "code": "dreamdiary.diary.supervisor",
+#                            "id": "12",
+#                            "name": "dreamdiary",
+#                            "resource_uri": ""
+#                        },
+#                    ],
+#                    "resource_uri": "/api/2/role/1/",
+#                    "source": "zap",
+#                    "title": "teacher"
+#                }
+#            ],
+#            "theme_color": "ffffff",
+#            "user_groups": [
+#                {
+#                    "created": "2014-03-12T19:21:47.403524",
+#                    "filter_type": null,
+#                    "id": "2",
+#                    "level": 0,
+#                    "lft": 1,
+#                    "modified": "2014-03-12T19:21:47.403524",
+#                    "name": "1a",
+#                    "official": false,
+#                    "organisation": {
+#                        "created": "2014-03-12T19:21:47.403524",
+#                        "id": "3",
+#                        "modified": "2015-08-10T12:37:54.719312",
+#                        "name": "foo",
+#                        "override_username_cleanup": false,
+#                        "registration_allowed": false,
+#                        "resource_uri": "/api/2/organisation/3/",
+#                        "source": "zap",
+#                        "title": "Organisation Name"
+#                    },
+#                    "resource_uri": "/api/2/group/2/",
+#                    "rght": 2,
+#                    "source": "",
+#                    "title": "1a",
+#                    "tree_id": 150
+#                },
+#            ],
+#            "username": "foo.bar"
+#        },
+#    ]
+#}
+
+TEACHER_PERM = 'dreamdiary.diary.supervisor'
+
+class DreamschoolDataSource(object):
+  """This backend fetches users from ds.fi"""
+
+  def __init__(self, *args, **kwargs):
+    self.request = None
+    LOG.debug('DreamschoolDataSource initialized')
+
+  def _get_oid(self, username):
+    """
+    There is no OID information in this external source. Generate fake OID
+    from username.
+    """
+    # TODO: OID is cut to 30 chars due to django username limitation
+    return 'MPASSOID.{user_hash}'.format(user_hash=hashlib.sha1('dreamschool' + username).hexdigest())[:30]
+
+  def _get_roles(self, user_data):
+    """Create roles structure
+
+    Example::
+
+      [
+          {
+              "school": "17392",
+              "role": "teacher",
+              "group": "7A",
+              "municipality": "City"
+          },
+          {
+              "school": "17392",
+              "role": "teacher",
+              "group": "7B",
+              "municipality": "City"
+          }
+      ]
+    """
+
+    roles_data = user_data['roles']
+    groups_data = user_data['user_groups']
+
+    # First we get list of schools where user is a teacher
+    schools_as_teacher = []
+    for r in roles_data:
+      org_id = r['organisation']['id']
+      if TEACHER_PERM in [i['code'] for i in r['permissions']]:
+        schools_as_teacher.append(org_id)
+
+    # iterate through groups
+    for g in groups_data:
+      out = {}
+      out['school'] = g['organisation']['title']
+      if g['organisation']['id'] in schools_as_teacher:
+        out['role'] = 'teacher'
+      else:
+        out['role'] = 'student'
+      out['group'] = g['title']
+      out['municipality'] = self.request.GET.get('municipality')
+      yield out
+
+  def _get_org_id(self, municipality, school):
+    if not municipality or not school:
+      return None
+
+    try:
+      muni = settings.AUTHDATA_DREAMSCHOOL_ORG_MAP[municipality.lower()]
+    except IndexError:
+      LOG.error('Unknown municipality')
+      return None
+
+    try:
+      org_id = muni[school.lower()]
+    except IndexError:
+      LOG.error('Unknwwn school in municipality %s' % municipality)
+      return None
+
+    LOG.debug('get_org_id: %s' % repr(org_id))
+    return org_id
+
+
+  def get_user_data(self, request):
+    self.request = request
+    school = ''
+    group = ''
+    municipality = request.GET['municipality'].lower()
+
+    if 'school' in request.GET:
+      school = request.GET['school']
+    if 'group' in request.GET:
+      group = request.GET['group']
+
+    url = settings.AUTHDATA_DREAMSCHOOL_API
+    username = settings.AUTHDATA_DREAMSCHOOL_USER
+    password = settings.AUTHDATA_DREAMSCHOOL_PASSWORD
+    org_id = self._get_org_id(municipality, school)
+
+    if org_id:
+      params = {
+        'organisations__id': org_id,
+        'user_groups__name__icontains': group,
+      }
+      r = requests.get(url, auth=(username, password), params=params)
+    else:
+      # This may fail to proxy timeout error
+      # TODO: Catch status code 502 Proxy error
+      r = requests.get(url, auth=(username, password))
+
+    response = []
+    user_data = {}
+    try:
+      user_data = r.json()
+    except json.JSONDecodeError:
+      LOG.exception('Could not parse user data from dreamschool API')
+      return response
+
+
+    for d in user_data['objects']:
+      username = d['username']
+      first_name = d['first_name']
+      last_name = d['last_name']
+      attributes = [
+      ]
+      roles = list(self._get_roles(d['roles']))
+      response.append({
+        'username': self._get_oid(username),
+        'first_name': first_name,
+        'last_name': last_name,
+        'roles': roles,
+        'attributes': attributes
+      })
+    # TODO: support actual paging via SimplePagedResultsControl
+
+    return {
+      'count': len(response),
+      'next': None,
+      'previous': None,
+      'results': response,
+    }
+
+  def get_data(self, attribute, value):
+    # TODO: Maybe
+    raise NotImplementedError
+
+# vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
+
