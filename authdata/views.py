@@ -77,7 +77,7 @@ class QueryView(generics.RetrieveAPIView):
           user_obj, c = User.objects.get_or_create(username=user_data['username'])
           if c:
             # New User was created. Add external source as UserAttribute.
-            attr_obj = Attribute.objects.get_or_create(name=attr)
+            attr_obj, attr_c = Attribute.objects.get_or_create(name=attr)
             # TODO: source?
             datasource_obj = Source.objects.get_or_create(name=request.user.username)
             user_obj.attributes.create(attribute=attr_obj, value=request.GET.get(attr), data_source=datasource_obj)
