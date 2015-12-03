@@ -104,7 +104,8 @@ class TestLDAPDataSource(LDAPDataSource):
     There is no OID information in this external source. Generate fake OID
     from username.
     """
-    return 'MPASSOID.%s' % hashlib.sha1('ldap_test' + username).hexdigest()
+    # TODO: OID is cut to 30 chars due to django username limitation
+    return 'MPASSOID.%s' % hashlib.sha1('ldap_test' + username).hexdigest()[:30]
 
   def get_data(self, attribute, value):
     try:
@@ -253,7 +254,8 @@ class OuluLDAPDataSource(LDAPDataSource):
     There is no OID information in this external source. Generate fake OID
     from username.
     """
-    return 'MPASSOID.%s' % hashlib.sha1('ad_oulu' + username).hexdigest()
+    # TODO: OID is cut to 30 chars due to django username limitation
+    return 'MPASSOID.%s' % hashlib.sha1('ad_oulu' + username).hexdigest()[:30]
 
   def get_username(self, query_result):
     return query_result[1]['sAMAccountName'][0]
