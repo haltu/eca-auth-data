@@ -81,6 +81,7 @@ class UserAttribute(TimeStampedModel):
   attribute = models.ForeignKey(Attribute)
   value = models.CharField(max_length=2048, blank=True, null=True, default=None)
   data_source = models.ForeignKey(Source)
+  disabled_at = models.DateTimeField(null=True, blank=True)
 
   def __unicode__(self):
     return "%s: %s" % (self.attribute, self.value)
