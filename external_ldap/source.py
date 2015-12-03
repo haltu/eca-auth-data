@@ -68,10 +68,10 @@ class LDAPDataSource(ExternalDataSource):
     super(LDAPDataSource, self).__init__(*args, **kwargs)
 
   def get_municipality_id(self, name):
-    return self.municipality_id_map.get(name, None)
+    return self.municipality_id_map.get(name, name)
 
   def get_school_id(self, name):
-    return self.school_id_map.get(name, None)
+    return self.school_id_map.get(name, name)
 
   def connect(self):
     """
