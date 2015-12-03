@@ -116,10 +116,7 @@ class TestLDAPDataSource(LDAPDataSource):
     username = query_result[1]['cn'][0]
     first_name = query_result[1]['givenName'][0]
     last_name = query_result[1]['sn'][0]
-    attributes = [{
-      'name': attribute,
-      'value': value
-    }]
+    attributes = []
     roles = [{
       'school': dn_parts[3].strip("ou="),
       'role': query_result[1]['title'][0],
@@ -286,10 +283,7 @@ class OuluLDAPDataSource(LDAPDataSource):
     username = self.get_username(query_result)
     first_name = self.get_first_name(query_result)
     last_name = self.get_last_name(query_result)
-    attributes = [{
-      'name': attribute,
-      'value': value
-    }]
+    attributes = []
     roles = [{
       'school': self.get_school_id(self.get_school(query_result)),
       'role': self.get_role(query_result),

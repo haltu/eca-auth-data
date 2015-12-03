@@ -83,7 +83,7 @@ class QueryView(generics.RetrieveAPIView):
             user_obj.attributes.create(attribute=attr_obj, value=request.GET.get(attr), data_source=datasource_obj)
           for user_attribute in user_obj.attributes.all():
             # Add attributes to user data
-            user_data['attributes'][user_attribute.attribute.name] = user_attribute.value
+            user_data['attributes'].append({'name': user_attribute.attribute.name, 'value': user_attribute.value})
           return Response(user_data)
         except ImportError as e:
           # TODO: log this, error handling
