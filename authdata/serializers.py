@@ -49,7 +49,7 @@ class QuerySerializer(serializers.ModelSerializer):
 
   def attribute_data(self, obj):
     data = []
-    for a in obj.attributes.all():
+    for a in obj.attributes.filter(disabled_at__isnull=True):
       d = {}
       d['name'] = a.attribute.name
       d['value'] = a.value
@@ -62,9 +62,9 @@ class UserSerializer(QuerySerializer):
     # attribute data is filtered. only attributes where source is requesting user's username are returned
     data = []
     if 'request' in self.context:
-      attribute_qs = obj.attributes.filter(data_source__name=self.context['request'].user.username)
+      attribute_qs = obj.attributes.filter(disabled_at__isnull=True, data_source__name=self.context['request'].user.username)
     else:
-      attribute_qs = obj.attributes.all()
+      attribute_qs = obj.attributes.filter(disabled_at__isnull=True)
     for a in attribute_qs:
       d = {}
       d['name'] = a.attribute.name
