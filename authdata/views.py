@@ -162,10 +162,17 @@ class UserAttributeFilter(django_filters.FilterSet):
 
 
 class UserAttributeViewSet(viewsets.ModelViewSet):
-  queryset = UserAttribute.objects.all()
+  queryset = UserAttribute.objects.filter(disabled_at__isnull=True)
   serializer_class = UserAttributeSerializer
   filter_backends = (filters.DjangoFilterBackend,)
   filter_class = UserAttributeFilter
+
+  def destroy(self, request, *args, **kwargs):
+    # UserAttribute is flagged as disabled
+    obj = self.get_object()
+    obj.disabled_at = datetime.datetime.now()
+    obj.save()
+    return Response(status=204)
 
 
 class MunicipalityViewSet(viewsets.ModelViewSet):
