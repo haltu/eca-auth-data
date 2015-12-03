@@ -105,7 +105,7 @@ class TestLDAPDataSource(LDAPDataSource):
     from username.
     """
     # TODO: OID is cut to 30 chars due to django username limitation
-    return 'MPASSOID.%s' % hashlib.sha1('ldap_test' + username).hexdigest()[:30]
+    return 'MPASSOID.{user_hash}'.format(user_hash=hashlib.sha1('ldap_test' + username).hexdigest())[:30]
 
   def get_data(self, attribute, value):
     try:
@@ -255,7 +255,7 @@ class OuluLDAPDataSource(LDAPDataSource):
     from username.
     """
     # TODO: OID is cut to 30 chars due to django username limitation
-    return 'MPASSOID.%s' % hashlib.sha1('ad_oulu' + username).hexdigest()[:30]
+    return 'MPASSOID.{user_hash}'.format(user_hash=hashlib.sha1('ldap_test' + username).hexdigest())[:30]
 
   def get_username(self, query_result):
     return query_result[1]['sAMAccountName'][0]
