@@ -138,11 +138,8 @@ AUTH_EXTERNAL_SOURCES = {
 # Everything in lowercase
 
 AUTHDATA_DREAMSCHOOL_ORG_MAP = {
-  'kauniainen': { 'mäntymäen koulu': 3},
+  u'kauniainen': { u'mäntymäen koulu': 3},
 }
-AUTHDATA_DREAMSCHOOL_USER = ''
-AUTHDATA_DREAMSCHOOL_PASSWORD = ''
-AUTHDATA_DREAMSCHOOL_API = 'https://id.dreamschool.fi/api/2/user/'
 
 try:
   from local_settings import *

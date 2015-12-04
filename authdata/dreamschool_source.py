@@ -30,7 +30,7 @@ Dreamschool external data source
 
 import logging
 import hashlib
-import json
+from pprint import pprint
 import requests
 from django.conf import settings
 
@@ -133,10 +133,18 @@ LOG = logging.getLogger(__name__)
 TEACHER_PERM = 'dreamdiary.diary.supervisor'
 
 class DreamschoolDataSource(object):
-  """This backend fetches users from ds.fi"""
+  """
+  Required configuration parameters:
+    api_url
+    username
+    password
+  """
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, api_url, username, password, *args, **kwargs):
     self.request = None
+    self.api_url = api_url
+    self.username = username
+    self.password = password
     LOG.debug('DreamschoolDataSource initialized')
 
   def _get_oid(self, username):
@@ -187,7 +195,11 @@ class DreamschoolDataSource(object):
       else:
         out['role'] = 'student'
       out['group'] = g['title']
-      out['municipality'] = self.request.GET.get('municipality')
+      out['municipality'] = self.request.GET.get('municipality').capitalize()
+      if settings.DEBUG:
+        pprint(g)
+        pprint(out)
+        print '*********'
       yield out
 
   def _get_org_id(self, municipality, school):
@@ -206,45 +218,64 @@ class DreamschoolDataSource(object):
       LOG.error('Unknwwn school in municipality %s' % municipality)
       return None
 
-    LOG.debug('get_org_id: %s' % repr(org_id))
+    LOG.debug('Mapped municipality and school to org id', extra={'data': {
+      'municipality': repr(municipality),
+      'school': repr(school),
+      'org_id': org_id,
+    }})
     return org_id
 
 
   def get_user_data(self, request):
     self.request = request
-    school = ''
-    group = ''
+    school = u''
+    group = u''
     municipality = request.GET['municipality'].lower()
 
     if 'school' in request.GET:
-      school = request.GET['school']
+      school = unicode(request.GET['school'])
     if 'group' in request.GET:
-      group = request.GET['group']
+      group = unicode(request.GET['group'])
 
-    url = settings.AUTHDATA_DREAMSCHOOL_API
-    username = settings.AUTHDATA_DREAMSCHOOL_USER
-    password = settings.AUTHDATA_DREAMSCHOOL_PASSWORD
+    url = self.api_url
+    username = self.username
+    password = self.password
     org_id = self._get_org_id(municipality, school)
 
+    params = {}
     if org_id:
       params = {
         'organisations__id': org_id,
-        'user_groups__name__icontains': group,
       }
+      if group:
+        params['user_groups__name__icontains'] = group
       r = requests.get(url, auth=(username, password), params=params)
     else:
       # This may fail to proxy timeout error
       # TODO: Catch status code 502 Proxy error
       r = requests.get(url, auth=(username, password))
 
+    LOG.debug('Fetched from dreamschool', extra={'data':
+      {'api_url': self.api_url,
+       'params': params,
+       'status_code': r.status_code,
+        }})
+
+    if r.status_code != requests.codes.ok:
+      LOG.warning('Dreamschool API response not OK', extra={'data':
+        {'status_code': r.status_code,
+         'municipality': repr(municipality),
+         'api_url': self.api_url,
+         'username': self.username,
+          }})
+
     response = []
     user_data = {}
     try:
       user_data = r.json()
-    except json.JSONDecodeError:
+    except ValueError:
       LOG.exception('Could not parse user data from dreamschool API')
       return response
-
 
     for d in user_data['objects']:
       username = d['username']
@@ -252,7 +283,7 @@ class DreamschoolDataSource(object):
       last_name = d['last_name']
       attributes = [
       ]
-      roles = list(self._get_roles(d['roles']))
+      roles = self._get_roles(d)
       response.append({
         'username': self._get_oid(username),
         'first_name': first_name,
