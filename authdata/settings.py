@@ -139,6 +139,7 @@ AUTH_EXTERNAL_SOURCES = {
 
 AUTHDATA_DREAMSCHOOL_ORG_MAP = {
   u'kauniainen': { u'mäntymäen koulu': 3},
+  u'kauniainen': { u'kasavuoren koulu': 1},
 }
 
 try:

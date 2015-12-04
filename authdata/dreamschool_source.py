@@ -155,7 +155,17 @@ class DreamschoolDataSource(object):
     # TODO: OID is cut to 30 chars due to django username limitation
     return 'MPASSOID.{user_hash}'.format(user_hash=hashlib.sha1('dreamschool' + username).hexdigest())[:30]
 
-  def _get_roles(self, user_data):
+  def _get_municipality_by_org_id(self, org_id):
+    org_id = int(org_id)
+    LOG.debug('fetching municipality for org_id',
+        extra={'data': {'org_id': org_id}})
+    for municipality in settings.AUTHDATA_DREAMSCHOOL_ORG_MAP.keys():
+      for org_title in settings.AUTHDATA_DREAMSCHOOL_ORG_MAP[municipality]:
+        if int(settings.AUTHDATA_DREAMSCHOOL_ORG_MAP[municipality][org_title]) == org_id:
+          return municipality.capitalize()
+    return u''
+
+  def _get_roles(self, user_data, municipality):
     """Create roles structure
 
     Example::
@@ -195,11 +205,11 @@ class DreamschoolDataSource(object):
       else:
         out['role'] = 'student'
       out['group'] = g['title']
-      out['municipality'] = self.request.GET.get('municipality').capitalize()
-      if settings.DEBUG:
-        pprint(g)
-        pprint(out)
-        print '*********'
+      out['municipality'] = self._get_municipality_by_org_id(g['organisation']['id'])
+      # if settings.DEBUG:
+      #   pprint(g)
+      #   pprint(out)
+      #   print '*********'
       yield out
 
   def _get_org_id(self, municipality, school):
@@ -227,6 +237,8 @@ class DreamschoolDataSource(object):
 
 
   def get_user_data(self, request):
+    """ Requested by mpass-connector """
+
     self.request = request
     school = u''
     group = u''
@@ -283,7 +295,7 @@ class DreamschoolDataSource(object):
       last_name = d['last_name']
       attributes = [
       ]
-      roles = self._get_roles(d)
+      roles = self._get_roles(d, municipality)
       response.append({
         'username': self._get_oid(username),
         'first_name': first_name,
@@ -301,8 +313,56 @@ class DreamschoolDataSource(object):
     }
 
   def get_data(self, attribute, value):
-    # TODO: Maybe
-    raise NotImplementedError
+    """Requested by idP
+
+    attribute: 'dreamschool'
+    value: 'user id (int)'
+    """
+    user_id = value
+    url = self.api_url + user_id  # TODO: use join
+    municipality = 'Foo' # TODO: Fixme!
+    username = self.username
+    password = self.password
+
+    r = requests.get(url, auth=(username, password))
+
+    LOG.debug('Fetched from dreamschool', extra={'data':
+      {'api_url': self.api_url,
+       'status_code': r.status_code,
+        }})
+
+    if r.status_code != requests.codes.ok:
+      LOG.warning('Dreamschool API response not OK', extra={'data':
+        {'status_code': r.status_code,
+         'api_url': self.api_url,
+         'username': self.username,
+          }})
+
+    user_data = {}
+    try:
+      user_data = r.json()
+      if settings.DEBUG:
+        pprint(user_data)
+    except ValueError:
+      LOG.exception('Could not parse user data from dreamschool API')
+      return {}
+
+    d = user_data
+    username = d['username']
+    first_name = d['first_name']
+    last_name = d['last_name']
+    attributes = [
+    ]
+    roles = self._get_roles(d, municipality)
+
+    return {
+      'username': self._get_oid(username),
+      'first_name': first_name,
+      'last_name': last_name,
+      'roles': roles,
+      'attributes': attributes
+    }
+    # TODO: support actual paging via SimplePagedResultsControl
 
 # vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
 
