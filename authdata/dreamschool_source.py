@@ -157,7 +157,7 @@ class DreamschoolDataSource(object):
 
   def _get_municipality_by_org_id(self, org_id):
     org_id = int(org_id)
-    LOG.debug('fetching municipality for org_id',
+    LOG.debug('Fetching municipality for org_id',
         extra={'data': {'org_id': org_id}})
     for municipality in settings.AUTHDATA_DREAMSCHOOL_ORG_MAP.keys():
       for org_title in settings.AUTHDATA_DREAMSCHOOL_ORG_MAP[municipality]:
@@ -165,7 +165,7 @@ class DreamschoolDataSource(object):
           return municipality.capitalize()
     return u''
 
-  def _get_roles(self, user_data, municipality):
+  def _get_roles(self, user_data):
     """Create roles structure
 
     Example::
@@ -260,7 +260,7 @@ class DreamschoolDataSource(object):
         'organisations__id': org_id,
       }
       if group:
-        params['user_groups__name__icontains'] = group
+        params['user_groups__title__icontains'] = group
       r = requests.get(url, auth=(username, password), params=params)
     else:
       # This may fail to proxy timeout error
@@ -280,6 +280,12 @@ class DreamschoolDataSource(object):
          'api_url': self.api_url,
          'username': self.username,
           }})
+      return {
+        'count': 0,
+        'next': None,
+        'previous': None,
+        'results': [],
+      }
 
     response = []
     user_data = {}
@@ -295,7 +301,7 @@ class DreamschoolDataSource(object):
       last_name = d['last_name']
       attributes = [
       ]
-      roles = self._get_roles(d, municipality)
+      roles = self._get_roles(d)
       response.append({
         'username': self._get_oid(username),
         'first_name': first_name,
@@ -320,7 +326,6 @@ class DreamschoolDataSource(object):
     """
     user_id = value
     url = self.api_url + user_id  # TODO: use join
-    municipality = 'Foo' # TODO: Fixme!
     username = self.username
     password = self.password
 
@@ -353,7 +358,7 @@ class DreamschoolDataSource(object):
     last_name = d['last_name']
     attributes = [
     ]
-    roles = self._get_roles(d, municipality)
+    roles = self._get_roles(d)
 
     return {
       'username': self._get_oid(username),
