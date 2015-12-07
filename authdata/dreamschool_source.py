@@ -216,15 +216,19 @@ class DreamschoolDataSource(object):
     if not municipality or not school:
       return None
 
+    LOG.debug('Fetching org id for given municipality and school',
+        extra={'data': {'municipality': repr(municipality),
+                        'school': repr(school)}})
+
     try:
       muni = settings.AUTHDATA_DREAMSCHOOL_ORG_MAP[municipality.lower()]
-    except IndexError:
+    except KeyError:
       LOG.error('Unknown municipality')
       return None
 
     try:
       org_id = muni[school.lower()]
-    except IndexError:
+    except KeyError:
       LOG.error('Unknown school', extra={'data':
         {'school': repr(school),
          'municipality': repr(municipality),
