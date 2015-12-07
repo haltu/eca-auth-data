@@ -29,6 +29,7 @@ External data source implementations
 """
 
 import hashlib
+import ldap
 from external_ldap.source import LDAPDataSource
 
 
@@ -245,6 +246,19 @@ class OuluLDAPDataSource(LDAPDataSource):
                   Query will substitue {value} with Auth Proxy's attribute query value.
     """
     super(OuluLDAPDataSource, self).__init__(*args, **kwargs)
+
+  def connect(self):
+    """
+    Initialize a secure connection the the LDAP server.
+    """
+    ldap.set_option(ldap.OPT_X_TLS_CACERTFILE, 'oulu_certificate')
+    self.connection = ldap.initialize(self.ldap_server)
+    self.connection.set_option(ldap.OPT_REFERRALS, 0)
+    self.connection.set_option(ldap.OPT_PROTOCOL_VERSION, 3)
+    self.connection.set_option(ldap.OPT_X_TLS_DEMAND, True)
+    self.connection.set_option(ldap.OPT_X_TLS, ldap.OPT_X_TLS_DEMAND)
+    self.connection.start_tls_s()
+    self.connection.simple_bind_s(self.ldap_username, self.ldap_password)
 
   def get_oid(self, username):
     """
