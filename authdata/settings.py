@@ -133,7 +133,19 @@ REST_FRAMEWORK = {
 AUTH_EXTERNAL_SOURCES = {
 }
 
+# Dreamschool Data Source
+# {'Municipality: {'Organisation/School': 'organisation id in dreamschool'}}
+# Everything in lowercase
+
+AUTHDATA_DREAMSCHOOL_ORG_MAP = {
+  u'kauniainen': { u'mäntymäen koulu': 3},
+  u'kauniainen': { u'kasavuoren koulu': 1},
+}
+
 try:
   from local_settings import *
 except ImportError:
   pass
+
+# vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
+
