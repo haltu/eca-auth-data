@@ -225,7 +225,11 @@ class DreamschoolDataSource(object):
     try:
       org_id = muni[school.lower()]
     except IndexError:
-      LOG.error('Unknwwn school in municipality %s' % municipality)
+      LOG.error('Unknown school', extra={'data':
+        {'school': repr(school),
+         'municipality': repr(municipality),
+         'muni_data': repr(muni),
+         }})
       return None
 
     LOG.debug('Mapped municipality and school to org id', extra={'data': {
