@@ -138,8 +138,7 @@ AUTH_EXTERNAL_SOURCES = {
 # Everything in lowercase
 
 AUTHDATA_DREAMSCHOOL_ORG_MAP = {
-  u'kauniainen': { u'mäntymäen koulu': 3},
-  u'kauniainen': { u'kasavuoren koulu': 1},
+    u'kauniainen': { u'mäntymäen koulu': 3, u'kasavuoren koulu': 1},
 }
 
 try:
