@@ -78,8 +78,7 @@ class QueryView(generics.RetrieveAPIView):
           if c:
             # New User was created. Add external source as UserAttribute.
             attr_obj, attr_c = Attribute.objects.get_or_create(name=attr)
-            # TODO: source?
-            datasource_obj, source_c = Source.objects.get_or_create(name=request.user.username)
+            datasource_obj, source_c = Source.objects.get_or_create(name='mpass-data')
             user_obj.attributes.create(attribute=attr_obj, value=request.GET.get(attr), data_source=datasource_obj)
           for user_attribute in user_obj.attributes.all():
             # Add attributes to user data

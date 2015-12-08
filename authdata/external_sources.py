@@ -239,7 +239,7 @@ class OuluLDAPDataSource(LDAPDataSource):
 
   def __init__(self, base_dn, *args, **kwargs):
     self.ldap_base_dn = base_dn
-    self.ldap_filter = "(sAMAccountName={value})"
+    self.ldap_filter = "(|(sAMAccountName={value})(userPrincipalName={value}@eduouka.fi))"
     """
     ldap_filter = Filter for finding the required user in an LDAP query,
                   for example "(&(attribute={value})(objectclass=inetOrgPerson))"
