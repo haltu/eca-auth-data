@@ -66,8 +66,8 @@ class School(TimeStampedModel):
 
 
 class User(TimeStampedModel, AbstractUser):
-  pass
-
+  external_source = models.CharField(max_length=2000, blank=True, default='')
+  external_id = models.CharField(max_length=2000, blank=True, default='')
 
 class Attribute(TimeStampedModel):
   name = models.CharField(max_length=2048, blank=True, null=True, default=None)
@@ -129,4 +129,6 @@ class ExternalDataSource(object):
     request: the request object containing GET-parameters for filtering the query
     """
     raise NotImplementedError
+
+# vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
 
