@@ -35,6 +35,7 @@ import requests
 from django.conf import settings
 
 from authdata.models import ExternalDataSource
+from authdata.models import User, UserAttribute, Source, Attribute
 
 LOG = logging.getLogger(__name__)
 
@@ -305,22 +306,42 @@ class DreamschoolDataSource(ExternalDataSource):
       LOG.exception('Could not parse user data from dreamschool API')
       return response
 
+    source_obj, _ = Source.objects.get_or_create(name='local')
+    attribute_obj, _ = Attribute.objects.get_or_create(name='dreamschool')
+
     for d in user_data['objects']:
+      user_id = d['id']
       username = d['username']
+      email = d['email']
       first_name = d['first_name']
       last_name = d['last_name']
+      oid = self._get_oid(username)
       attributes = [
       ]
       roles = self._get_roles(d)
       response.append({
-        'username': self._get_oid(username),
+        'username': oid,
         'first_name': first_name,
         'last_name': last_name,
         'roles': roles,
         'attributes': attributes
       })
-    # TODO: support actual paging via SimplePagedResultsControl
 
+      # On Demand provisioning of the user
+      user_obj, _ = User.objects.get_or_create(username=oid)
+      user_obj.first_name = first_name
+      user_obj.last_name = last_name
+      user_obj.email = email
+      user_obj.external_source = 'dreamschool'
+      user_obj.external_id = str(user_id)
+      user_obj.save()
+
+      user_attr_obj, _ = UserAttribute.objects.get_or_create(user=user_obj,
+          attribute=attribute_obj, data_source=source_obj)
+      user_attr_obj.value = str(user_id)
+      user_attr_obj.save()
+
+    # TODO: support actual paging via SimplePagedResultsControl
     return {
       'count': len(response),
       'next': None,
