@@ -34,6 +34,8 @@ from pprint import pprint
 import requests
 from django.conf import settings
 
+from authdata.models import ExternalDataSource
+
 LOG = logging.getLogger(__name__)
 
 # Example response from Dreamschool
@@ -132,7 +134,7 @@ LOG = logging.getLogger(__name__)
 
 TEACHER_PERM = 'dreamdiary.diary.supervisor'
 
-class DreamschoolDataSource(object):
+class DreamschoolDataSource(ExternalDataSource):
   """
   Required configuration parameters:
     api_url
