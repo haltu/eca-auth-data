@@ -75,7 +75,7 @@ class UserSerializer(QuerySerializer):
   class Meta:
     model = User
     lookup_field = 'username'
-    fields = ('username','first_name','last_name','roles','attributes')
+    fields = ('username','first_name','last_name', 'external_id', 'roles','attributes')
 
 
 class AttributeSerializer(serializers.ModelSerializer):
