@@ -310,9 +310,8 @@ class DreamschoolDataSource(ExternalDataSource):
     attribute_obj, _ = Attribute.objects.get_or_create(name='dreamschool')
 
     for d in user_data['objects']:
-      user_id = d['id']
+      user_id = d['id'] # TODO. Refactor into self.get_external_id()
       username = d['username']
-      email = d['email']
       first_name = d['first_name']
       last_name = d['last_name']
       oid = self._get_oid(username)
@@ -329,9 +328,6 @@ class DreamschoolDataSource(ExternalDataSource):
 
       # On Demand provisioning of the user
       user_obj, _ = User.objects.get_or_create(username=oid)
-      user_obj.first_name = first_name
-      user_obj.last_name = last_name
-      user_obj.email = email
       user_obj.external_source = 'dreamschool'
       user_obj.external_id = str(user_id)
       user_obj.save()
