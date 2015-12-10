@@ -352,7 +352,7 @@ class DreamschoolDataSource(ExternalDataSource):
     value: 'user id (int)'
     """
     user_id = value
-    url = self.api_url + user_id  # TODO: use join
+    url = self.api_url + user_id + '/'  # TODO: use join
     username = self.username
     password = self.password
 
@@ -369,15 +369,16 @@ class DreamschoolDataSource(ExternalDataSource):
          'api_url': self.api_url,
          'username': self.username,
           }})
+      return None
 
     user_data = {}
     try:
       user_data = r.json()
-      if settings.DEBUG:
-        pprint(user_data)
+      # if settings.DEBUG:
+      #   pprint(user_data)
     except ValueError:
       LOG.exception('Could not parse user data from dreamschool API')
-      return {}
+      return None
 
     d = user_data
     username = d['username']
