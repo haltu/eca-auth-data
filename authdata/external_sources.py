@@ -30,6 +30,7 @@ External data source implementations
 
 import hashlib
 import ldap
+import base64
 from external_ldap.source import LDAPDataSource
 
 
@@ -239,7 +240,8 @@ class OuluLDAPDataSource(LDAPDataSource):
 
   def __init__(self, base_dn, *args, **kwargs):
     self.ldap_base_dn = base_dn
-    self.ldap_filter = "(|(sAMAccountName={value})(userPrincipalName={value}@eduouka.fi))"
+    #self.ldap_filter = "(|(sAMAccountName={value})(userPrincipalName={value}@eduouka.fi))"
+    self.ldap_filter = "(objectGUID={value})"
     """
     ldap_filter = Filter for finding the required user in an LDAP query,
                   for example "(&(attribute={value})(objectclass=inetOrgPerson))"
@@ -269,7 +271,7 @@ class OuluLDAPDataSource(LDAPDataSource):
     return 'MPASSOID.{user_hash}'.format(user_hash=hashlib.sha1('ad_oulu' + username).hexdigest())[:30]
 
   def get_username(self, query_result):
-    return query_result[1]['sAMAccountName'][0]
+    return query_result[1]['objectGUID'][0]
 
   def get_first_name(self, query_result):
     return query_result[1].get('givenName', [u''])[0]
@@ -291,7 +293,10 @@ class OuluLDAPDataSource(LDAPDataSource):
 
   def get_data(self, attribute, value):
     try:
-      query_result = self.query(self.ldap_filter.format(value=value))[0]
+      # search term is an objectGUID. it needs to be decoded to a byte string
+      # for querying ldap
+      object_guid = base64.b64decode(value)
+      query_result = self.query(self.ldap_filter.format(value=object_guid))[0]
     except IndexError:
       return None
     username = self.get_username(query_result)
