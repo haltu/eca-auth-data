@@ -38,6 +38,7 @@ import django_filters
 from authdata.serializers import QuerySerializer, UserSerializer, AttributeSerializer, UserAttributeSerializer, MunicipalitySerializer, SchoolSerializer, RoleSerializer, AttendanceSerializer
 from authdata.models import User, Attribute, UserAttribute, Municipality, School, Role, Attendance, Source
 
+
 def get_external_user_data(external_source, external_id):
   """
   Raises ImportError if external source configuration is wrong
@@ -45,7 +46,7 @@ def get_external_user_data(external_source, external_id):
   source = settings.AUTH_EXTERNAL_SOURCES[external_source]
   handler_module = importlib.import_module(source[0])
   handler = getattr(handler_module, source[1])(**source[2])
-  return handler.get_data(attr, request.GET.get(attr))
+  return handler.get_data(external_source, external_id)
 
 
 class QueryView(generics.RetrieveAPIView):
