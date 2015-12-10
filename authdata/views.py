@@ -38,6 +38,15 @@ import django_filters
 from authdata.serializers import QuerySerializer, UserSerializer, AttributeSerializer, UserAttributeSerializer, MunicipalitySerializer, SchoolSerializer, RoleSerializer, AttendanceSerializer
 from authdata.models import User, Attribute, UserAttribute, Municipality, School, Role, Attendance, Source
 
+def get_external_user_data(external_source, external_id):
+  """
+  Raises ImportError if external source configuration is wrong
+  """
+  source = settings.AUTH_EXTERNAL_SOURCES[external_source]
+  handler_module = importlib.import_module(source[0])
+  handler = getattr(handler_module, source[1])(**source[2])
+  return handler.get_data(attr, request.GET.get(attr))
+
 
 class QueryView(generics.RetrieveAPIView):
   """ Returns information about one user.
@@ -63,32 +72,55 @@ class QueryView(generics.RetrieveAPIView):
   lookup_field = 'username'
 
   def get(self, request, *args, **kwargs):
-    for attr in request.GET.keys():
-      if attr in settings.AUTH_EXTERNAL_ATTRIBUTE_BINDING:
-        source = settings.AUTH_EXTERNAL_SOURCES[settings.AUTH_EXTERNAL_ATTRIBUTE_BINDING[attr]]
+    # 1. look for a user object matching the query parameter. if it's found, check if it's an external user and fetch data
+    try:
+      user_obj = self.get_object()
+    except Http404:
+      user_obj = None
+    if user_obj:
+      # local user object exists.
+      if user_obj.external_source and user_obj.external_id:
+        # user is an external user. fetch data from source.
         try:
-          handler_module = importlib.import_module(source[0])
-          handler = getattr(handler_module, source[1])(**source[2])
-          user_data = handler.get_data(attr, request.GET.get(attr))
-          if user_data is None:
-            # queried user does not exist in the external source
-            raise Http404
-          # Find or create user in local db to access UserAttributes
-          user_obj, c = User.objects.get_or_create(username=user_data['username'])
-          if c:
-            # New User was created. Add external source as UserAttribute.
-            attr_obj, attr_c = Attribute.objects.get_or_create(name=attr)
-            datasource_obj, source_c = Source.objects.get_or_create(name='mpass-data')
-            user_obj.attributes.create(attribute=attr_obj, value=request.GET.get(attr), data_source=datasource_obj)
-          for user_attribute in user_obj.attributes.all():
-            # Add attributes to user data
-            user_data['attributes'].append({'name': user_attribute.attribute.name, 'value': user_attribute.value})
-          return Response(user_data)
-        except ImportError as e:
-          # TODO: log this, error handling
-          # flow back to normal implementation most likely return empty
-          pass
-      break
+          user_data = get_external_user_data(user_obj.external_source, user_obj.external_id)
+        except ImportError:
+          # TODO: configuration or data error, log this
+          return Response(None)
+        if user_data is None:
+          # queried user does not exist in the external source
+          return Response(None)
+        for user_attribute in user_obj.attributes.all():
+          # Add attributes to user data
+          user_data['attributes'].append({'name': user_attribute.attribute.name, 'value': user_attribute.value})
+        return Response(user_data)
+    else:
+      # 2. if user was not found and query parameter is mapped to an external source, fetch and create user
+      for attr in request.GET.keys():
+        if attr in settings.AUTH_EXTERNAL_ATTRIBUTE_BINDING:
+          try:
+            user_data = get_external_user_data(settings.AUTH_EXTERNAL_ATTRIBUTE_BINDING[attr], request.GET.get(attr))
+            if user_data is None:
+              # queried user does not exist in the external source
+              return Response(None)
+            # Find or create user in local db to access UserAttributes
+
+            user_obj, c = User.objects.get_or_create(username=user_data['username'], defaults={'external_source': attr, 'external_id': request.GET.get(attr)})
+            if c:
+              # New User was created. Add external source as UserAttribute because
+              # it's an auth source as well.
+              # TODO: this should be moved to the external source specific implementation since not all external data sources are auth sources.
+              attr_obj, attr_c = Attribute.objects.get_or_create(name=attr)
+              datasource_obj, source_c = Source.objects.get_or_create(name='mpass-data')
+              user_obj.attributes.create(attribute=attr_obj, value=request.GET.get(attr), data_source=datasource_obj)
+            for user_attribute in user_obj.attributes.all():
+              # Add attributes to user data
+              user_data['attributes'].append({'name': user_attribute.attribute.name, 'value': user_attribute.value})
+            return Response(user_data)
+          except ImportError as e:
+            # TODO: log this, error handling
+            # flow back to normal implementation most likely return empty
+            pass
+        break
     return super(QueryView, self).get(request, *args, **kwargs)
 
   def get_object(self):
