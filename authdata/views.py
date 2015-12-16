@@ -24,6 +24,7 @@
 #
 
 
+import logging
 import datetime
 import importlib
 from django.db.models import Q
@@ -36,8 +37,9 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 import django_filters
 from authdata.serializers import QuerySerializer, UserSerializer, AttributeSerializer, UserAttributeSerializer, MunicipalitySerializer, SchoolSerializer, RoleSerializer, AttendanceSerializer
-from authdata.models import User, Attribute, UserAttribute, Municipality, School, Role, Attendance, Source
+from authdata.models import User, Attribute, UserAttribute, Municipality, School, Role, Attendance
 
+LOG = logging.getLogger(__name__)
 
 def get_external_user_data(external_source, external_id):
   """
@@ -45,7 +47,9 @@ def get_external_user_data(external_source, external_id):
   """
   source = settings.AUTH_EXTERNAL_SOURCES[external_source]
   handler_module = importlib.import_module(source[0])
-  handler = getattr(handler_module, source[1])(**source[2])
+  kwargs = source[2]
+  kwargs['external_source'] = external_source
+  handler = getattr(handler_module, source[1])(**kwargs)
   return handler.get_data(external_source, external_id)
 
 
@@ -103,22 +107,17 @@ class QueryView(generics.RetrieveAPIView):
             if user_data is None:
               # queried user does not exist in the external source
               return Response(None)
-            # Find or create user in local db to access UserAttributes
 
-            user_obj, c = User.objects.get_or_create(username=user_data['username'], defaults={'external_source': attr, 'external_id': request.GET.get(attr)})
-            if c:
-              # New User was created. Add external source as UserAttribute because
-              # it's an auth source as well.
-              # TODO: this should be moved to the external source specific implementation since not all external data sources are auth sources.
-              attr_obj, attr_c = Attribute.objects.get_or_create(name=attr)
-              datasource_obj, source_c = Source.objects.get_or_create(name='mpass-data')
-              user_obj.attributes.create(attribute=attr_obj, value=request.GET.get(attr), data_source=datasource_obj)
+            # New users are created in data source
+            user_obj = User.objects.get(username=user_data['username'])
             for user_attribute in user_obj.attributes.all():
               # Add attributes to user data
               user_data['attributes'].append({'name': user_attribute.attribute.name, 'value': user_attribute.value})
             return Response(user_data)
+
           except ImportError as e:
-            # TODO: log this, error handling
+            LOG.error('Could not import external data source', extra={'data': {'error': e, 'attr': repr(attr)}})
+            # TODO: error handling
             # flow back to normal implementation most likely return empty
             pass
         break
@@ -182,10 +181,14 @@ class UserViewSet(viewsets.ModelViewSet):
           source = settings.AUTH_EXTERNAL_SOURCES[binding]
       try:
         handler_module = importlib.import_module(source[0])
-        handler = getattr(handler_module, source[1])(**source[2])
+        k = source[2]
+        k['external_source'] = binding
+        handler = getattr(handler_module, source[1])(**k)
         return Response(handler.get_user_data(request))
       except ImportError as e:
-        # TODO: log this, error handling
+        LOG.error('Could not import external data source',
+                extra={'data': {'error': e}})
+        # TODO: error handling
         # flow back to normal implementation most likely return empty
         pass
 
@@ -239,5 +242,5 @@ class AttendanceViewSet(viewsets.ModelViewSet):
   queryset = Attendance.objects.all()
   serializer_class = AttendanceSerializer
 
-
+# vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
 

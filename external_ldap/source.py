@@ -25,8 +25,11 @@
 #
 
 
+import logging
 import ldap
 from authdata.models import ExternalDataSource
+
+LOG = logging.getLogger(__name__)
 
 
 class LDAPDataSource(ExternalDataSource):
@@ -61,10 +64,16 @@ class LDAPDataSource(ExternalDataSource):
     #'school': '00001',
   }
 
+  external_source = 'ldap'
+
   def __init__(self, host, username, password, *args, **kwargs):
     self.ldap_server = host
     self.ldap_username = username
     self.ldap_password = password
+    if 'external_source' in kwargs:
+      self.external_source = kwargs['external_source']
+    LOG.debug('LDAPDataSource initialized',
+        extra={'data': {'external_source': self.external_source }})
     super(LDAPDataSource, self).__init__(*args, **kwargs)
 
   def get_municipality_id(self, name):

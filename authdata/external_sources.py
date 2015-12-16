@@ -28,10 +28,13 @@
 External data source implementations
 """
 
+import logging
 import hashlib
 import ldap
 import base64
 from external_ldap.source import LDAPDataSource
+
+LOG = logging.getLogger(__name__)
 
 
 class TestLDAPDataSource(LDAPDataSource):
@@ -109,15 +112,16 @@ class TestLDAPDataSource(LDAPDataSource):
     # TODO: OID is cut to 30 chars due to django username limitation
     return 'MPASSOID.{user_hash}'.format(user_hash=hashlib.sha1('ldap_test' + username).hexdigest())[:30]
 
-  def get_data(self, attribute, value):
+  def get_data(self, external_source, external_id):
     try:
-      query_result = self.query(self.ldap_filter.format(value=value))[0]
+      query_result = self.query(self.ldap_filter.format(value=external_id))[0]
     except IndexError:
       return None
     dn_parts = query_result[0].split(',')
     username = query_result[1]['cn'][0]
     first_name = query_result[1]['givenName'][0]
     last_name = query_result[1]['sn'][0]
+    oid = self.get_oid(username)
     attributes = []
     roles = [{
       'school': dn_parts[3].strip("ou="),
@@ -125,8 +129,12 @@ class TestLDAPDataSource(LDAPDataSource):
       'municipality': dn_parts[4].strip("ou="),
       'group': query_result[1].get('departmentNumber', [''])[0]
     }]
+
+    # Provision
+    self.provision_user(oid, external_id, external_source)
+
     return {
-      'username': self.get_oid(username),
+      'username': oid,
       'first_name': first_name,
       'last_name': last_name,
       'roles': roles,
@@ -148,6 +156,8 @@ class TestLDAPDataSource(LDAPDataSource):
       username = result[1]['cn'][0]
       first_name = result[1]['givenName'][0]
       last_name = result[1]['sn'][0]
+      external_id = result[1]['uid'][0]
+      oid = self.get_oid(username)
       attributes = [
         # TODO: what attributes should be returned from LDAP?
       ]
@@ -158,14 +168,17 @@ class TestLDAPDataSource(LDAPDataSource):
         'group': result[1].get('departmentNumber', [''])[0]
       }]
       response.append({
-        'username': self.get_oid(username),
+        'username': oid,
         'first_name': first_name,
         'last_name': last_name,
         'roles': roles,
         'attributes': attributes
       })
-    # TODO: support actual paging via SimplePagedResultsControl
 
+      # Provision
+      self.provision_user(oid, external_id, self.external_source)
+
+    # TODO: support actual paging via SimplePagedResultsControl
     return {
       'count': len(response),
       'next': None,
@@ -270,6 +283,14 @@ class OuluLDAPDataSource(LDAPDataSource):
     # TODO: OID is cut to 30 chars due to django username limitation
     return 'MPASSOID.{user_hash}'.format(user_hash=hashlib.sha1('ad_oulu' + username).hexdigest())[:30]
 
+  def get_external_id(self, query_result):
+    # TODO: Check if this works
+    if 'uid' not in query_result[1]:
+      LOG.error('FIX IMPLEMENTATION. Get right user id',
+          extra={'data': {'query_result': query_result}})
+
+    return query_result[1]['uid'][0]
+
   def get_username(self, query_result):
     return query_result[1]['objectGUID'][0]
 
@@ -291,17 +312,18 @@ class OuluLDAPDataSource(LDAPDataSource):
   def get_group(self, query_result):
     return query_result[1].get('department', [u''])[0]
 
-  def get_data(self, attribute, value):
+  def get_data(self, external_source, external_id):
     try:
       # search term is an objectGUID. it needs to be decoded to a byte string
       # for querying ldap
-      object_guid = base64.b64decode(value)
+      object_guid = base64.b64decode(external_id)
       query_result = self.query(self.ldap_filter.format(value=object_guid))[0]
     except IndexError:
       return None
     username = self.get_username(query_result)
     first_name = self.get_first_name(query_result)
     last_name = self.get_last_name(query_result)
+    oid = self.get_oid(username)
     attributes = []
     roles = [{
       'school': self.get_school_id(self.get_school(query_result)),
@@ -309,8 +331,12 @@ class OuluLDAPDataSource(LDAPDataSource):
       'municipality': self.get_municipality_id(self.get_municipality()),
       'group': self.get_group(query_result),
     }]
+
+    # Provision
+    self.provision_user(oid, external_id, external_source)
+
     return {
-      'username': self.get_oid(username),
+      'username': oid,
       'first_name': first_name,
       'last_name': last_name,
       'roles': roles,
@@ -330,6 +356,8 @@ class OuluLDAPDataSource(LDAPDataSource):
       username = self.get_username(query_result)
       first_name = self.get_first_name(query_result)
       last_name = self.get_last_name(query_result)
+      external_id = self.get_external_id(query_result)
+      oid = self.get_oid(username)
       attributes = [
         # TODO: what attributes should be returned from LDAP?
       ]
@@ -340,12 +368,16 @@ class OuluLDAPDataSource(LDAPDataSource):
         'group': self.get_group(query_result),
       }]
       response.append({
-        'username': self.get_oid(username),
+        'username': oid,
         'first_name': first_name,
         'last_name': last_name,
         'roles': roles,
         'attributes': attributes
       })
+
+      # Provision
+      self.provision_user(oid, external_id, self.external_source)
+
     # TODO: support actual paging via SimplePagedResultsControl
 
     return {

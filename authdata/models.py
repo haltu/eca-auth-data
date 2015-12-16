@@ -24,11 +24,12 @@
 #
 
 
-from django.utils.translation import ugettext_lazy as _
+import logging
 from django.db import models
-from django.core import validators
 from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
+
+LOG = logging.getLogger(__name__)
 
 
 class TimeStampedModel(models.Model):
@@ -110,15 +111,25 @@ class ExternalDataSource(object):
   An external user attribute source. The source is identified by a specific
   attribute name, which is configured in the project settings.
 
-  This is an abstract interface class.
+  This is a base class for all external data sources
   """
 
-  def get_data(self, attribute, value):
+  external_source = ''
+
+  def get_oid(self, username):
+    """
+    Generate MPASS OID for user from the username
+
+    Not needed if authentication source returns proper oid
+    """
+    raise NotImplementedError
+
+  def get_data(self, external_source, external_id):
     """
     Get user data based on attribute query.
 
-    attribute: attribute name passed by Auth Proxy
-    value: attribute value passed by Auth Proxy
+    external_source: attribute name passed by Auth Proxy
+    external_id: attribute value passed by Auth Proxy
     """
     raise NotImplementedError
 
@@ -129,6 +140,40 @@ class ExternalDataSource(object):
     request: the request object containing GET-parameters for filtering the query
     """
     raise NotImplementedError
+
+  def provision_user(self, oid, external_id, external_source):
+    """
+    Save fetched user to local db
+
+    oid: MPASS identifier
+    external_id: id of the user in the external data source
+    external_source: string that identifies external data source
+    """
+
+    user_obj, new_user_created = User.objects.get_or_create(username=oid)
+    LOG.debug('User provision',
+            extra={'data':
+                   {'oid': oid, 'external_id': external_id,
+                    'external_source': external_source,
+                    'new_user_created': new_user_created,
+                    }})
+    user_obj.external_id = external_id
+    user_obj.external_source = external_source
+    user_obj.save()
+
+    source_obj, _ = Source.objects.get_or_create(name='local')
+    attribute_obj, _ = Attribute.objects.get_or_create(name=external_source)
+
+    user_attr_obj, _ = UserAttribute.objects.get_or_create(user=user_obj,
+        attribute=attribute_obj, data_source=source_obj)
+    user_attr_obj.value = external_id
+    user_attr_obj.save()
+    LOG.debug('User attribute added',
+        extra={'data':
+              {'oid': oid, 'external_id': external_id,
+               'external_source': external_source,
+               'new_user_created': new_user_created,
+               'source_name': 'local'}})
 
 # vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
 

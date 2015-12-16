@@ -30,12 +30,11 @@ Dreamschool external data source
 
 import logging
 import hashlib
-from pprint import pprint
 import requests
+
 from django.conf import settings
 
 from authdata.models import ExternalDataSource
-from authdata.models import User, UserAttribute, Source, Attribute
 
 LOG = logging.getLogger(__name__)
 
@@ -143,21 +142,19 @@ class DreamschoolDataSource(ExternalDataSource):
     password
   """
 
+  external_source = 'dreamschool'
+
   def __init__(self, api_url, username, password, *args, **kwargs):
     self.request = None
     self.api_url = api_url
     self.username = username
     self.password = password
-    LOG.debug('DreamschoolDataSource initialized')
+    if 'external_source' in kwargs:
+      self.external_source = kwargs['external_source']
+    LOG.debug('DreamschoolDataSource initialized',
+        extra={'data': {'external_source': self.external_source }})
 
-  def _get_oid(self, username):
-    """
-    There is no OID information in this external source. Generate fake OID
-    from username.
-    """
-    # TODO: OID is cut to 30 chars due to django username limitation
-    return 'MPASSOID.{user_hash}'.format(user_hash=hashlib.sha1('dreamschool' + username).hexdigest())[:30]
-
+  # PRIVATE METHODS
   def _get_municipality_by_org_id(self, org_id):
     org_id = int(org_id)
     LOG.debug('Fetching municipality for org_id',
@@ -209,10 +206,6 @@ class DreamschoolDataSource(ExternalDataSource):
         out['role'] = 'student'
       out['group'] = g['title']
       out['municipality'] = self._get_municipality_by_org_id(g['organisation']['id'])
-      # if settings.DEBUG:
-      #   pprint(g)
-      #   pprint(out)
-      #   print '*********'
       yield out
 
   def _get_org_id(self, municipality, school):
@@ -246,9 +239,21 @@ class DreamschoolDataSource(ExternalDataSource):
     }})
     return org_id
 
+  # INTERFACE METHODS
+  def get_oid(self, username):
+    """
+    There is no OID information in this external source. Generate fake OID
+    from username.
+    """
+    # TODO: OID is cut to 30 chars due to django username limitation
+    return 'MPASSOID.{user_hash}'.format(user_hash=hashlib.sha1('dreamschool' + username).hexdigest())[:30]
 
   def get_user_data(self, request):
-    """ Requested by mpass-connector """
+    """
+    Requested by mpass-connector
+
+    Returns a list of users based on request.GET filtering values
+    """
 
     self.request = request
     school = u''
@@ -306,15 +311,13 @@ class DreamschoolDataSource(ExternalDataSource):
       LOG.exception('Could not parse user data from dreamschool API')
       return response
 
-    source_obj, _ = Source.objects.get_or_create(name='local')
-    attribute_obj, _ = Attribute.objects.get_or_create(name='dreamschool')
-
     for d in user_data['objects']:
-      user_id = d['id'] # TODO. Refactor into self.get_external_id()
+      user_id = d['id']
       username = d['username']
       first_name = d['first_name']
       last_name = d['last_name']
-      oid = self._get_oid(username)
+      oid = self.get_oid(username)
+      external_id = str(user_id)
       attributes = [
       ]
       roles = self._get_roles(d)
@@ -326,16 +329,8 @@ class DreamschoolDataSource(ExternalDataSource):
         'attributes': attributes
       })
 
-      # On Demand provisioning of the user
-      user_obj, _ = User.objects.get_or_create(username=oid)
-      user_obj.external_source = 'dreamschool'
-      user_obj.external_id = str(user_id)
-      user_obj.save()
-
-      user_attr_obj, _ = UserAttribute.objects.get_or_create(user=user_obj,
-          attribute=attribute_obj, data_source=source_obj)
-      user_attr_obj.value = str(user_id)
-      user_attr_obj.save()
+      # On Demand provisioning of the users
+      self.provision_user(oid, external_id, external_source=self.external_source)
 
     # TODO: support actual paging via SimplePagedResultsControl
     return {
@@ -374,8 +369,6 @@ class DreamschoolDataSource(ExternalDataSource):
     user_data = {}
     try:
       user_data = r.json()
-      # if settings.DEBUG:
-      #   pprint(user_data)
     except ValueError:
       LOG.exception('Could not parse user data from dreamschool API')
       return None
@@ -388,8 +381,13 @@ class DreamschoolDataSource(ExternalDataSource):
     ]
     roles = self._get_roles(d)
 
+    # On Demand provisioning of the user
+    external_id = str(d['id'])
+    oid = self.get_oid(username)
+    self.provision_user(oid, external_id, self.external_source)
+
     return {
-      'username': self._get_oid(username),
+      'username': self.get_oid(username),
       'first_name': first_name,
       'last_name': last_name,
       'roles': roles,
