@@ -116,6 +116,9 @@ class ExternalDataSource(object):
 
   external_source = ''
 
+  def __init__(self, *args, **kwargs):
+    pass
+
   def get_oid(self, username):
     """
     Generate MPASS OID for user from the username
