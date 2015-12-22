@@ -125,6 +125,7 @@ class QueryView(generics.RetrieveAPIView):
 
   def get_object(self):
     qs = self.filter_queryset(self.get_queryset())
+    qs = qs.distinct()
     filter_kwargs = {}
     lookup = self.kwargs.get(self.lookup_field, None)
     if lookup:
@@ -134,6 +135,7 @@ class QueryView(generics.RetrieveAPIView):
         a = get_object_or_404(Attribute.objects.all(), name=k)
         filter_kwargs['attributes__attribute__name'] = a.name
         filter_kwargs['attributes__value'] = v
+        filter_kwargs['attributes__disabled_at__isnull'] = True
         break # only handle one GET variable for now
       else:
         raise Http404
