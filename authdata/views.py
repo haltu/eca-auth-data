@@ -97,6 +97,7 @@ class QueryView(generics.RetrieveAPIView):
         for user_attribute in user_obj.attributes.all():
           # Add attributes to user data
           user_data['attributes'].append({'name': user_attribute.attribute.name, 'value': user_attribute.value})
+        LOG.debug('/query returning data', extra={'data': {'user_data': repr(user_data)}})
         return Response(user_data)
     else:
       # 2. if user was not found and query parameter is mapped to an external source, fetch and create user
@@ -113,6 +114,7 @@ class QueryView(generics.RetrieveAPIView):
             for user_attribute in user_obj.attributes.all():
               # Add attributes to user data
               user_data['attributes'].append({'name': user_attribute.attribute.name, 'value': user_attribute.value})
+            LOG.debug('/query returning data', extra={'data': {'user_data': repr(user_data)}})
             return Response(user_data)
 
           except ImportError as e:
@@ -186,7 +188,9 @@ class UserViewSet(viewsets.ModelViewSet):
         k = source[2]
         k['external_source'] = binding
         handler = getattr(handler_module, source[1])(**k)
-        return Response(handler.get_user_data(request))
+        user_data = handler.get_user_data(request)
+        LOG.debug('/user returning data', extra={'data': {'user_data': repr(user_data)}})
+        return Response(user_data)
       except ImportError as e:
         LOG.error('Could not import external data source',
                 extra={'data': {'error': e}})
