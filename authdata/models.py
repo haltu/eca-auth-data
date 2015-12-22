@@ -127,11 +127,10 @@ class ExternalDataSource(object):
     """
     raise NotImplementedError
 
-  def get_data(self, external_source, external_id):
+  def get_data(self, external_id):
     """
     Get user data based on attribute query.
 
-    external_source: attribute name passed by Auth Proxy
     external_id: attribute value passed by Auth Proxy
     """
     raise NotImplementedError
@@ -144,28 +143,27 @@ class ExternalDataSource(object):
     """
     raise NotImplementedError
 
-  def provision_user(self, oid, external_id, external_source):
+  def provision_user(self, oid, external_id):
     """
     Save fetched user to local db
 
     oid: MPASS identifier
     external_id: id of the user in the external data source
-    external_source: string that identifies external data source
     """
 
     user_obj, new_user_created = User.objects.get_or_create(username=oid)
     LOG.debug('User provision',
             extra={'data':
                    {'oid': oid, 'external_id': external_id,
-                    'external_source': external_source,
+                    'external_source': self.external_source,
                     'new_user_created': new_user_created,
                     }})
     user_obj.external_id = external_id
-    user_obj.external_source = external_source
+    user_obj.external_source = self.external_source
     user_obj.save()
 
     source_obj, _ = Source.objects.get_or_create(name='local')
-    attribute_obj, _ = Attribute.objects.get_or_create(name=external_source)
+    attribute_obj, _ = Attribute.objects.get_or_create(name=self.external_source)
 
     user_attr_obj, _ = UserAttribute.objects.get_or_create(user=user_obj,
         attribute=attribute_obj, data_source=source_obj)
@@ -174,7 +172,7 @@ class ExternalDataSource(object):
     LOG.debug('User attribute added',
         extra={'data':
               {'oid': oid, 'external_id': external_id,
-               'external_source': external_source,
+               'external_source': self.external_source,
                'new_user_created': new_user_created,
                'source_name': 'local'}})
 

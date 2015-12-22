@@ -149,10 +149,6 @@ class DreamschoolDataSource(ExternalDataSource):
     self.api_url = api_url
     self.username = username
     self.password = password
-    if 'external_source' in kwargs:
-      self.external_source = kwargs['external_source']
-    LOG.debug('DreamschoolDataSource initialized',
-        extra={'data': {'external_source': self.external_source }})
 
   # PRIVATE METHODS
   def _get_municipality_by_org_id(self, org_id):
@@ -330,7 +326,7 @@ class DreamschoolDataSource(ExternalDataSource):
       })
 
       # On Demand provisioning of the users
-      self.provision_user(oid, external_id, external_source=self.external_source)
+      self.provision_user(oid, external_id)
 
     # TODO: support actual paging via SimplePagedResultsControl
     return {
@@ -340,14 +336,12 @@ class DreamschoolDataSource(ExternalDataSource):
       'results': response,
     }
 
-  def get_data(self, attribute, value):
+  def get_data(self, external_id):
     """Requested by idP
 
-    attribute: 'dreamschool'
-    value: 'user id (int)'
+    external_id: user id in dreamschool
     """
-    user_id = value
-    url = self.api_url + user_id + '/'  # TODO: use join
+    url = self.api_url + external_id + '/'  # TODO: use join
     username = self.username
     password = self.password
 
@@ -384,7 +378,7 @@ class DreamschoolDataSource(ExternalDataSource):
     # On Demand provisioning of the user
     external_id = str(d['id'])
     oid = self.get_oid(username)
-    self.provision_user(oid, external_id, self.external_source)
+    self.provision_user(oid, external_id)
 
     return {
       'username': self.get_oid(username),

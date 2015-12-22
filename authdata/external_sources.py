@@ -64,6 +64,8 @@ class TestLDAPDataSource(LDAPDataSource):
 
   """
 
+  external_source = 'ldap_test'
+
   municipality_id_map = {
     'KuntaYksi': '1234567-8'
   }
@@ -112,7 +114,7 @@ class TestLDAPDataSource(LDAPDataSource):
     # TODO: OID is cut to 30 chars due to django username limitation
     return 'MPASSOID.{user_hash}'.format(user_hash=hashlib.sha1('ldap_test' + username).hexdigest())[:30]
 
-  def get_data(self, external_source, external_id):
+  def get_data(self, external_id):
     try:
       query_result = self.query(self.ldap_filter.format(value=external_id))[0]
     except IndexError:
@@ -131,7 +133,7 @@ class TestLDAPDataSource(LDAPDataSource):
     }]
 
     # Provision
-    self.provision_user(oid, external_id, external_source)
+    self.provision_user(oid, external_id)
 
     return {
       'username': oid,
@@ -176,7 +178,7 @@ class TestLDAPDataSource(LDAPDataSource):
       })
 
       # Provision
-      self.provision_user(oid, external_id, self.external_source)
+      self.provision_user(oid, external_id)
 
     # TODO: support actual paging via SimplePagedResultsControl
     return {
@@ -195,6 +197,8 @@ class OuluLDAPDataSource(LDAPDataSource):
     password
     base_dn
   """
+
+  external_source = 'ad_oulu'
 
   municipality_id_map = {
     'Oulu': '0187690-1'
@@ -312,7 +316,7 @@ class OuluLDAPDataSource(LDAPDataSource):
   def get_group(self, query_result):
     return query_result[1].get('department', [u''])[0]
 
-  def get_data(self, external_source, external_id):
+  def get_data(self, external_id):
     try:
       # search term is an objectGUID. it needs to be decoded to a byte string
       # for querying ldap
@@ -333,7 +337,7 @@ class OuluLDAPDataSource(LDAPDataSource):
     }]
 
     # Provision
-    self.provision_user(oid, external_id, external_source)
+    self.provision_user(oid, external_id)
 
     return {
       'username': oid,
@@ -376,7 +380,7 @@ class OuluLDAPDataSource(LDAPDataSource):
       })
 
       # Provision
-      self.provision_user(oid, external_id, self.external_source)
+      self.provision_user(oid, external_id)
 
     # TODO: support actual paging via SimplePagedResultsControl
 

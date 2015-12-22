@@ -48,7 +48,6 @@ def get_external_user_data(external_source, external_id):
   source = settings.AUTH_EXTERNAL_SOURCES[external_source]
   handler_module = importlib.import_module(source[0])
   kwargs = source[2]
-  kwargs['external_source'] = external_source
   handler = getattr(handler_module, source[1])(**kwargs)
   return handler.get_data(external_source, external_id)
 
@@ -186,7 +185,6 @@ class UserViewSet(viewsets.ModelViewSet):
       try:
         handler_module = importlib.import_module(source[0])
         k = source[2]
-        k['external_source'] = binding
         handler = getattr(handler_module, source[1])(**k)
         user_data = handler.get_user_data(request)
         LOG.debug('/user returning data', extra={'data': {'user_data': repr(user_data)}})
