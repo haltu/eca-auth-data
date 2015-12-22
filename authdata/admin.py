@@ -96,7 +96,7 @@ class UserAdmin(DjangoUserAdmin):
     )
     list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'external_source', 'external_id')
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups', 'external_source')
-    search_fields = ('username', 'first_name', 'last_name', 'email')
+    search_fields = ('username', 'first_name', 'last_name', 'email', 'external_id')
     ordering = ('username',)
     filter_horizontal = ('groups', 'user_permissions')
     inlines = [UserAttributeInline, AttendanceInline]
