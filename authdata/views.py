@@ -49,7 +49,7 @@ def get_external_user_data(external_source, external_id):
   handler_module = importlib.import_module(source[0])
   kwargs = source[2]
   handler = getattr(handler_module, source[1])(**kwargs)
-  return handler.get_data(external_source, external_id)
+  return handler.get_data(external_id)
 
 
 class QueryView(generics.RetrieveAPIView):
