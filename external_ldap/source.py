@@ -57,11 +57,11 @@ class LDAPDataSource(ExternalDataSource):
   connection = None
 
   municipality_id_map = {
-    #'municipality': '1234567-8',
+    # 'municipality': '1234567-8',
   }
 
   school_id_map = {
-    #'school': '00001',
+    # 'school': '00001',
   }
 
   external_source = 'ldap'
@@ -73,7 +73,7 @@ class LDAPDataSource(ExternalDataSource):
     if 'external_source' in kwargs:
       self.external_source = kwargs['external_source']
     LOG.debug('LDAPDataSource initialized',
-        extra={'data': {'external_source': self.external_source }})
+        extra={'data': {'external_source': self.external_source}})
     super(LDAPDataSource, self).__init__(*args, **kwargs)
 
   def get_municipality_id(self, name):

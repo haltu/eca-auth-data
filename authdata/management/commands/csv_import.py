@@ -64,7 +64,7 @@ For example: manage.py csv_import file.csv dreamschool,facebook,twitter,linkedin
         dest='verbose',
         default=False,
         help='Verbose'),
-    )
+  )
 
   def handle(self, *args, **options):
     if len(args) != 2:
@@ -88,12 +88,12 @@ For example: manage.py csv_import file.csv dreamschool,facebook,twitter,linkedin
     for r in csv_data:
       # These are the fixed fields for the User. These are returned from the API.
       data = {
-        'username': r[0], # OID
-        'school': r[1], # School
-        'group': r[2], # Class
-        'role': r[3], # Role
-        'first_name': r[4], # First name
-        'last_name': r[5], # Last name
+        'username': r[0],  # OID
+        'school': r[1],  # School
+        'group': r[2],  # Class
+        'role': r[3],  # Role
+        'first_name': r[4],  # First name
+        'last_name': r[5],  # Last name
       }
 
       # This is not mandatory, but it would be nice. Can be changed to error by terminating the script here.
@@ -145,4 +145,6 @@ For example: manage.py csv_import file.csv dreamschool,facebook,twitter,linkedin
 
     # Create Attendance object for User. There can be more than one Attendance per User.
     att,_ = Attendance.objects.get_or_create(user=user, school=school, role=self.role_names[d['role']], group=d['group'], source=self.source)
+
+# vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
 

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 
 # The MIT License (MIT)
@@ -24,12 +23,20 @@
 # THE SOFTWARE.
 #
 
+"""
+WSGI config for auth-data project.
+
+It exposes the WSGI callable as a module-level variable named ``application``.
+
+For more information on this file, see
+https://docs.djangoproject.com/en/1.7/howto/deployment/wsgi/
+"""
+
 import os
-import sys
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "authdata.production")
 
-if __name__ == "__main__":
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "project.settings")
+from django.core.wsgi import get_wsgi_application
+application = get_wsgi_application()
 
-    from django.core.management import execute_from_command_line
+# vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
 
-    execute_from_command_line(sys.argv)

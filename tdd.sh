@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- encoding: utf-8 -*-
+#!/usr/bin/env bash
 
 # The MIT License (MIT)
 #
@@ -24,12 +23,9 @@
 # THE SOFTWARE.
 #
 
-import os
-import sys
+while true
+do
+  tox
+  inotifywait --exclude .git -r . -e move -e close_write
+done
 
-if __name__ == "__main__":
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "project.settings")
-
-    from django.core.management import execute_from_command_line
-
-    execute_from_command_line(sys.argv)

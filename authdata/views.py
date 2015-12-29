@@ -41,6 +41,7 @@ from authdata.models import User, Attribute, UserAttribute, Municipality, School
 
 LOG = logging.getLogger(__name__)
 
+
 def get_external_user_data(external_source, external_id):
   """
   Raises ImportError if external source configuration is wrong
@@ -120,7 +121,6 @@ class QueryView(generics.RetrieveAPIView):
             LOG.error('Could not import external data source', extra={'data': {'error': e, 'attr': repr(attr)}})
             # TODO: error handling
             # flow back to normal implementation most likely return empty
-            pass
         break
     return super(QueryView, self).get(request, *args, **kwargs)
 
@@ -132,12 +132,12 @@ class QueryView(generics.RetrieveAPIView):
     if lookup:
       filter_kwargs = {self.lookup_field: lookup}
     else:
-      for k,v in self.request.GET.iteritems():
+      for k, v in self.request.GET.iteritems():
         a = get_object_or_404(Attribute.objects.all(), name=k)
         filter_kwargs['attributes__attribute__name'] = a.name
         filter_kwargs['attributes__value'] = v
         filter_kwargs['attributes__disabled_at__isnull'] = True
-        break # only handle one GET variable for now
+        break  # only handle one GET variable for now
       else:
         raise Http404
     obj = generics.get_object_or_404(qs, **filter_kwargs)

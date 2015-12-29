@@ -23,14 +23,40 @@
 # THE SOFTWARE.
 #
 
+import sys
+from project.settings import *
 
-from authdata.settings import *
+DEBUG = True
+TEMPLATE_DEBUG = True
 
-DEBUG = False
-TEMPLATE_DEBUG = False
+if 'test' in sys.argv:
+  DATABASES['default'] = {'ENGINE': 'django.db.backends.sqlite3', 'NAME': ':memory:'}
+  TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+  BROKER_BACKEND = 'memory'
+  CELERY_ALWAYS_EAGER = True
 
-try:
-  from local_settings import *
-except ImportError:
-  pass
+  PASSWORD_HASHERS = (
+    'django.contrib.auth.hashers.MD5PasswordHasher',
+    'django.contrib.auth.hashers.SHA1PasswordHasher',
+  )
+
+  EMAIL_BACKEND = 'django.core.mail.backend.locmem.EmailBackend'
+
+  NOSE_ARGS = [
+      '--verbosity=2',
+      '--with-tissue',
+      '--tissue-statistics',
+      '--tissue-color',
+      '--tissue-ignore=E111,E501,E128,E114,E121,W391',
+      '--with-coverage',
+      '--cover-package=authdata',
+      '--cover-package=external_ldap',
+      '--detailed-errors',
+      '--nocapture',
+  ]
+
+# try:
+#   from local_settings import *
+# except ImportError:
+#   pass
 
