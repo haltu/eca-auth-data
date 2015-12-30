@@ -27,6 +27,7 @@
 import string
 import factory
 import factory.fuzzy
+from django.utils import timezone
 from authdata import models
 
 
@@ -43,6 +44,7 @@ class UserFactory(factory.django.DjangoModelFactory):
 
   first_name = factory.Sequence(lambda n: 'First{0}'.format(n))
   last_name = factory.Sequence(lambda n: 'Last{0}'.format(n))
+  last_login = timezone.now()
   email = factory.LazyAttribute(lambda u:
       '{0}.{1}@example.com'.format(u.first_name, u.last_name))
   username = factory.fuzzy.FuzzyText(length=11, chars=string.digits, prefix='1.2.246.562.24.')

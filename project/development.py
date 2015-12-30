@@ -29,7 +29,55 @@ from project.settings import *
 DEBUG = True
 TEMPLATE_DEBUG = True
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'root': {
+      'level': 'DEBUG',
+      'handlers': ['console'],
+    },
+    'formatters': {
+      'normal': {
+        'format': '%(asctime)s %(levelname)s %(name)s %(thread)d %(lineno)s %(message)s %(data)s'
+      },
+      'verbose': {
+        'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s %(data)s'
+      },
+    },
+    'filters': {
+      'default': {
+        '()': 'project.logging_helpers.Filter',
+      },
+    },
+    'handlers': {
+      'console': {
+        'level': 'INFO',
+        'class': 'logging.StreamHandler',
+        'formatter': 'verbose',
+        'filters': ['default'],
+      },
+    },
+    'loggers': {
+      'django.db': {
+        'level': 'WARNING',
+        'handlers': ['console'],
+        'propagate': True,
+      },
+      'django': {
+        'level': 'INFO',
+        'handlers': ['console'],
+        'propagate': True,
+      },
+      '': {
+        'handlers': ['console'],
+        'level': 'DEBUG',
+        'propagate': False,
+      },
+    },
+}
+
 if 'test' in sys.argv:
+  INSTALLED_APPS += ('django_nose',)
   DATABASES['default'] = {'ENGINE': 'django.db.backends.sqlite3', 'NAME': ':memory:'}
   TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
   BROKER_BACKEND = 'memory'
@@ -44,10 +92,6 @@ if 'test' in sys.argv:
 
   NOSE_ARGS = [
       '--verbosity=2',
-      '--with-tissue',
-      '--tissue-statistics',
-      '--tissue-color',
-      '--tissue-ignore=E111,E501,E128,E114,E121,W391',
       '--with-coverage',
       '--cover-package=authdata',
       '--cover-package=external_ldap',
@@ -60,3 +104,4 @@ if 'test' in sys.argv:
 # except ImportError:
 #   pass
 
+# vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
