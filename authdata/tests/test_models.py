@@ -22,16 +22,37 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-#
+# pylint: disable=locally-disabled, no-member
 
 from django.test import TestCase
 from authdata.tests import factories as f
+from authdata import models
 
 
 class TestUser(TestCase):
+
   def test_user(self):
     o = f.UserFactory()
     self.assertTrue(o)
+    self.assertTrue(unicode(o))
+    u = models.User.objects.create(username='foo')
+    u.email = 'foo@bar.com'
+    u.save()
+    self.assertTrue(u.email)
+
+  def test_user_timestamps(self):
+    u = f.UserFactory()
+    self.assertTrue(u.created)
+    self.assertTrue(u.modified)
+
+  def test_user_last_login(self):
+    u = f.UserFactory()
+    self.assertTrue(u.last_login)
+
+  def test_user_extrnal_fields(self):
+    u = f.UserFactory()
+    self.assertFalse(u.external_source)
+    self.assertFalse(u.external_id)
 
 
 class TestMunicipality(TestCase):
