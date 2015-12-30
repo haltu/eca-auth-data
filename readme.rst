@@ -34,8 +34,12 @@ Data returned from the API looks like this::
     ]
     "attributes": [
       {
-        "attribute1_id": "attribute1_data",
-        "attribute2_id": "attribute2_data"
+        "name": "attribute1_id",
+        "value": "attribute1_data"
+      },
+      {
+        "name": "attribute2_id",
+        "value": "attribute2_data"
       }
     ]
   }
