@@ -34,8 +34,12 @@ Data returned from the API looks like this::
     ]
     "attributes": [
       {
-        "attribute1_id": "attribute1_data",
-        "attribute2_id": "attribute2_data"
+        "name": "attribute1_id",
+        "value": "attribute1_data"
+      },
+      {
+        "name": "attribute2_id",
+        "value": "attribute2_data"
       }
     ]
   }
@@ -93,16 +97,21 @@ The value for the filter parameter is UTF-8 as urlencoded string.
 
 For example, query could be: ``/api/1/query?facebook_id=foo``
 
+User attributes can be queried with username also. For example:
+``/api/1/query/[username]``
+
 User search query
 -----------------
 
-User objects can be searched by ``school``, ``group``, ``username`` and ``changed_at`` attributes.
+User objects can be searched by ``municipality``, ``school``, ``group``, ``username`` and ``changed_at`` attributes.
 
+* ``municipality`` is a mandatory search parameter
 * ``school``, ``group`` and ``username`` are string parameters
 * ``changed_at`` is a POSIX timestamp parameter. Only records changed after
-  this timestamp will be returned
+  this timestamp will be returned. When used with external datasources this
+  parameter has no effect on results.
 
-Example query: ``/api/1/user/?school=Keskustan%20koulu&group=7A&changed_at=1444398009``
+Example query: ``/api/1/user/?municipality=Esimerkkikunta&school=Keskustan%20koulu&group=7A&changed_at=1444398009``
 
 This returns all matches. The data returned is in the same format as the
 Attribute query data, with the exception that only attributes from the querying
@@ -118,6 +127,31 @@ educloud.oid
   This is same as the username field in the API.
 educloud.data
   Contains whole JSON document coming from the API. It is base64 encoded.
+
+
+External Sources
+================
+
+Auth Data can act as a proxy for external user data sources. In this case user
+data is stored only in the external source and not in Auth Data. Auth Data will
+however maintain a record of the user identity, storing the external source
+name, user unique identifier in the external source and any attributes that are
+associated to the user account.
+
+Each external source is a unique case, for example an LDAP database requiring
+credentials and having a specific schema where the information about users is
+stored. Each external source has a middleware implementation which is
+responsible for reading data and presenting it to Auth Data using a specific
+interface. This interface is specified in the abstract interface class
+ExternalDataSource (in models.py) which must be inherited by external data
+source implementations.
+
+External sources are configured in Auth Data settings. In user list query (``/api/1/user/``) the
+municipality search term is used to forward the query to the external source
+implementation. In the attribute query (``/api/1/query``) Auth Data finds the
+user in it's local database based on attribute or username the local User
+object contains the external source name and external source unique id which
+are used for querying the actual user data from the source.
 
 
 Sequence diagram for Educloud Pilot
