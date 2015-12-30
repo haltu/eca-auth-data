@@ -26,6 +26,6 @@
 while true
 do
   tox
-  inotifywait --exclude .git -r . -e move -e close_write
+  inotifywait -r authdata -r external_ldap -r project -e move -e close_write
 done
 
