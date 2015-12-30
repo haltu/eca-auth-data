@@ -11,3 +11,4 @@ newrelic.ini
 .coverage
 .tox
 local_settings.*
+oulu_certificate

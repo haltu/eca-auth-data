@@ -21,20 +21,17 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-#
-
 
 import logging
 from django.db import models
-from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
 
 LOG = logging.getLogger(__name__)
 
 
 class TimeStampedModel(models.Model):
-  created = models.DateTimeField(auto_now_add=True, default=timezone.now)
-  modified = models.DateTimeField(auto_now=True, default=timezone.now)
+  created = models.DateTimeField(auto_now_add=True)
+  modified = models.DateTimeField(auto_now=True)
 
   class Meta:
     abstract = True

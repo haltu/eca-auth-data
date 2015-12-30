@@ -77,7 +77,7 @@ MIDDLEWARE_CLASSES = (
 
 ROOT_URLCONF = 'authdata.urls'
 
-WSGI_APPLICATION = 'authdata.wsgi.application'
+WSGI_APPLICATION = 'project.wsgi.application'
 
 
 # Database
