@@ -26,9 +26,9 @@
 DATABASES = {
   'default': {
     'ENGINE': 'django.db.backends.postgresql_psycopg2',
-    'NAME': 'roledb',
-    'USER': 'roledb',
-    'PASSWORD': 'roledb',
+    'NAME': 'authdata',
+    'USER': 'authdata',
+    'PASSWORD': 'authdata',
   }
 }
 

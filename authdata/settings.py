@@ -24,7 +24,7 @@
 #
 
 """
-Django settings for roledb project.
+Django settings for auth-data project.
 
 For more information on this file, see
 https://docs.djangoproject.com/en/1.7/topics/settings/
@@ -60,7 +60,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'roledb',
+    'authdata',
     'rest_framework',
     'rest_framework.authtoken',
 )
@@ -75,9 +75,9 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
-ROOT_URLCONF = 'roledb.urls'
+ROOT_URLCONF = 'authdata.urls'
 
-WSGI_APPLICATION = 'roledb.wsgi.application'
+WSGI_APPLICATION = 'authdata.wsgi.application'
 
 
 # Database
@@ -113,7 +113,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticroot')
 
 # ----------------------------
 
-AUTH_USER_MODEL = 'roledb.User'
+AUTH_USER_MODEL = 'authdata.User'
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
@@ -122,10 +122,29 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication', # Included for easier debugging
     ),
-    'PAGINATE_BY': 10
+    'PAGINATE_BY': 10,
+    'PAGINATE_BY_PARAM': 'page_size',  # Allow client to override, using `?page_size=xxx`.
+    'MAX_PAGINATE_BY': 1000
+}
+
+# external sources should configured as a list with 3 elements.
+# [module import, classname, kwargs dict]
+#'ldap_test_id': ['authdata.external_sources', 'TestLDAPDataSource', {'host': 'foo', 'username': 'bar', 'password': 'baz'}],
+AUTH_EXTERNAL_SOURCES = {
+}
+
+# Dreamschool Data Source
+# {'Municipality: {'Organisation/School': 'organisation id in dreamschool'}}
+# Everything in lowercase
+
+AUTHDATA_DREAMSCHOOL_ORG_MAP = {
+    u'kauniainen': { u'mäntymäen koulu': 3, u'kasavuoren koulu': 1},
 }
 
 try:
   from local_settings import *
 except ImportError:
   pass
+
+# vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
+

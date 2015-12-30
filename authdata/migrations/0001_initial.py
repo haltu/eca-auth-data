@@ -52,13 +52,13 @@ class Migration(migrations.Migration):
                 ('is_staff', models.BooleanField(default=False, help_text='Designates whether the user can log into this admin site.', verbose_name='staff status')),
                 ('is_active', models.BooleanField(default=True, help_text='Designates whether this user should be treated as active. Unselect this instead of deleting accounts.', verbose_name='active')),
                 ('date_joined', models.DateTimeField(default=django.utils.timezone.now, verbose_name='date joined')),
+                ('created', models.DateTimeField(default=django.utils.timezone.now, auto_now_add=True)),
+                ('modified', models.DateTimeField(default=django.utils.timezone.now, auto_now=True)),
                 ('groups', models.ManyToManyField(related_query_name='user', related_name='user_set', to='auth.Group', blank=True, help_text='The groups this user belongs to. A user will get all permissions granted to each of his/her group.', verbose_name='groups')),
                 ('user_permissions', models.ManyToManyField(related_query_name='user', related_name='user_set', to='auth.Permission', blank=True, help_text='Specific permissions for this user.', verbose_name='user permissions')),
             ],
             options={
                 'abstract': False,
-                'verbose_name': 'user',
-                'verbose_name_plural': 'users',
             },
             bases=(models.Model,),
         ),
@@ -66,9 +66,12 @@ class Migration(migrations.Migration):
             name='Attendance',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('created', models.DateTimeField(default=django.utils.timezone.now, auto_now_add=True)),
+                ('modified', models.DateTimeField(default=django.utils.timezone.now, auto_now=True)),
                 ('group', models.CharField(default=b'', max_length=2048, blank=True)),
             ],
             options={
+                'abstract': False,
             },
             bases=(models.Model,),
         ),
@@ -76,9 +79,12 @@ class Migration(migrations.Migration):
             name='Attribute',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('created', models.DateTimeField(default=django.utils.timezone.now, auto_now_add=True)),
+                ('modified', models.DateTimeField(default=django.utils.timezone.now, auto_now=True)),
                 ('name', models.CharField(default=None, max_length=2048, null=True, blank=True)),
             ],
             options={
+                'abstract': False,
             },
             bases=(models.Model,),
         ),
@@ -86,9 +92,12 @@ class Migration(migrations.Migration):
             name='Municipality',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('created', models.DateTimeField(default=django.utils.timezone.now, auto_now_add=True)),
+                ('modified', models.DateTimeField(default=django.utils.timezone.now, auto_now=True)),
                 ('name', models.CharField(max_length=2048)),
             ],
             options={
+                'abstract': False,
             },
             bases=(models.Model,),
         ),
@@ -96,9 +105,12 @@ class Migration(migrations.Migration):
             name='Role',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('created', models.DateTimeField(default=django.utils.timezone.now, auto_now_add=True)),
+                ('modified', models.DateTimeField(default=django.utils.timezone.now, auto_now=True)),
                 ('name', models.CharField(max_length=2048)),
             ],
             options={
+                'abstract': False,
             },
             bases=(models.Model,),
         ),
@@ -106,11 +118,13 @@ class Migration(migrations.Migration):
             name='School',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('created', models.DateTimeField(default=django.utils.timezone.now, auto_now_add=True)),
+                ('modified', models.DateTimeField(default=django.utils.timezone.now, auto_now=True)),
                 ('name', models.CharField(max_length=2048)),
                 ('school_id', models.CharField(max_length=2048)),
-                ('municipality', models.ForeignKey(related_name=b'schools', to='roledb.Municipality')),
             ],
             options={
+                'abstract': False,
             },
             bases=(models.Model,),
         ),
@@ -118,9 +132,12 @@ class Migration(migrations.Migration):
             name='Source',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('created', models.DateTimeField(default=django.utils.timezone.now, auto_now_add=True)),
+                ('modified', models.DateTimeField(default=django.utils.timezone.now, auto_now=True)),
                 ('name', models.CharField(max_length=2048)),
             ],
             options={
+                'abstract': False,
             },
             bases=(models.Model,),
         ),
@@ -128,31 +145,52 @@ class Migration(migrations.Migration):
             name='UserAttribute',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('created', models.DateTimeField(default=django.utils.timezone.now, auto_now_add=True)),
+                ('modified', models.DateTimeField(default=django.utils.timezone.now, auto_now=True)),
                 ('value', models.CharField(default=None, max_length=2048, null=True, blank=True)),
-                ('name', models.ForeignKey(to='roledb.Attribute')),
-                ('source', models.ForeignKey(to='roledb.Source')),
+                ('attribute', models.ForeignKey(to='authdata.Attribute')),
+                ('data_source', models.ForeignKey(to='authdata.Source')),
                 ('user', models.ForeignKey(related_name=b'attributes', to=settings.AUTH_USER_MODEL)),
             ],
             options={
+                'abstract': False,
             },
             bases=(models.Model,),
         ),
         migrations.AddField(
+            model_name='school',
+            name='data_source',
+            field=models.ForeignKey(to='authdata.Source'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='school',
+            name='municipality',
+            field=models.ForeignKey(related_name=b'schools', to='authdata.Municipality'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='municipality',
+            name='data_source',
+            field=models.ForeignKey(to='authdata.Source'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='attendance',
+            name='data_source',
+            field=models.ForeignKey(related_name=b'attendances', to='authdata.Source'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
             model_name='attendance',
             name='role',
-            field=models.ForeignKey(to='roledb.Role'),
+            field=models.ForeignKey(to='authdata.Role'),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='attendance',
             name='school',
-            field=models.ForeignKey(related_name=b'users', to='roledb.School'),
-            preserve_default=True,
-        ),
-        migrations.AddField(
-            model_name='attendance',
-            name='source',
-            field=models.ForeignKey(related_name=b'attendances', to='roledb.Source'),
+            field=models.ForeignKey(related_name=b'users', to='authdata.School'),
             preserve_default=True,
         ),
         migrations.AddField(

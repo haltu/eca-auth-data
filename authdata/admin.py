@@ -26,15 +26,15 @@
 from django.utils.translation import ugettext, ugettext_lazy as _
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
-from roledb.forms import UserCreationForm, UserChangeForm
-from roledb.models import Municipality
-from roledb.models import School
-from roledb.models import Role
-from roledb.models import Attendance
-from roledb.models import Source
-from roledb.models import User
-from roledb.models import Attribute
-from roledb.models import UserAttribute
+from authdata.forms import UserCreationForm, UserChangeForm
+from authdata.models import Municipality
+from authdata.models import School
+from authdata.models import Role
+from authdata.models import Attendance
+from authdata.models import Source
+from authdata.models import User
+from authdata.models import Attribute
+from authdata.models import UserAttribute
 
 
 class MunicipalityAdmin(admin.ModelAdmin):
@@ -86,6 +86,7 @@ class UserAdmin(DjangoUserAdmin):
         (_('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser',
                                        'groups', 'user_permissions')}),
         (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
+        (_('External source'), {'fields': ('external_source', 'external_id')}),
     )
     add_fieldsets = (
         (None, {
@@ -93,9 +94,9 @@ class UserAdmin(DjangoUserAdmin):
             'fields': ('username',),
         }),
     )
-    list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff')
-    list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups')
-    search_fields = ('username', 'first_name', 'last_name', 'email')
+    list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'external_source', 'external_id')
+    list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups', 'external_source')
+    search_fields = ('username', 'first_name', 'last_name', 'email', 'external_id')
     ordering = ('username',)
     filter_horizontal = ('groups', 'user_permissions')
     inlines = [UserAttributeInline, AttendanceInline]

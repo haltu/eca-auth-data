@@ -23,14 +23,17 @@
 # THE SOFTWARE.
 #
 
+"""
+WSGI config for auth-data project.
 
-from roledb.settings import *
+It exposes the WSGI callable as a module-level variable named ``application``.
 
-DEBUG = False
-TEMPLATE_DEBUG = False
+For more information on this file, see
+https://docs.djangoproject.com/en/1.7/howto/deployment/wsgi/
+"""
 
-try:
-  from settings_local import *
-except ImportError:
-  pass
+import os
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "authdata.production")
 
+from django.core.wsgi import get_wsgi_application
+application = get_wsgi_application()

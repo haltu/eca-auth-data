@@ -3,5 +3,8 @@ syntax: glob
 db.sqlite3
 *.pyc
 *.swp
+*.swo
 settings_local.py
+local_settings.py
 staticroot/
+newrelic.ini

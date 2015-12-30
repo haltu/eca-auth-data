@@ -1,4 +1,5 @@
-# -*- encoding: utf-8 -*-
+
+# -*- coding: utf-8 -*-
 
 # The MIT License (MIT)
 #
@@ -23,17 +24,51 @@
 # THE SOFTWARE.
 #
 
-"""
-WSGI config for roledb project.
+from django.test import TestCase
+from authdata.tests import factories as f
 
-It exposes the WSGI callable as a module-level variable named ``application``.
 
-For more information on this file, see
-https://docs.djangoproject.com/en/1.7/howto/deployment/wsgi/
-"""
+class TestUser(TestCase):
+  def test_user(self):
+    o = f.UserFactory()
+    self.assertTrue(o)
 
-import os
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "roledb.production")
 
-from django.core.wsgi import get_wsgi_application
-application = get_wsgi_application()
+class TestMunicipality(TestCase):
+  def test_municipality(self):
+    o = f.MunicipalityFactory()
+    self.assertTrue(o)
+
+
+class TestSchool(TestCase):
+  def test_school(self):
+    o = f.SchoolFactory()
+    self.assertTrue(o)
+
+
+class TestAttribute(TestCase):
+  def test_attribute(self):
+    o = f.AttributeFactory()
+    self.assertTrue(o)
+
+
+class TestUserAttribute(TestCase):
+  def test_userattribute(self):
+    o = f.UserAttributeFactory()
+    self.assertTrue(o)
+
+
+class TestRole(TestCase):
+  def test_role(self):
+    o = f.RoleFactory()
+    self.assertTrue(o)
+
+
+class TestAttendance(TestCase):
+  def test_attendance(self):
+    o = f.AttendanceFactory()
+    self.assertTrue(o)
+
+
+# vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
+
