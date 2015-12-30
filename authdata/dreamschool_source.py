@@ -284,7 +284,7 @@ class DreamschoolDataSource(ExternalDataSource):
       {'api_url': self.api_url,
        'params': params,
        'status_code': r.status_code,
-        }})
+       }})
 
     if r.status_code != requests.codes.ok:
       LOG.warning('Dreamschool API response not OK', extra={'data':
@@ -292,7 +292,7 @@ class DreamschoolDataSource(ExternalDataSource):
          'municipality': repr(municipality),
          'api_url': self.api_url,
          'username': self.username,
-          }})
+         }})
       return {
         'count': 0,
         'next': None,
@@ -351,14 +351,14 @@ class DreamschoolDataSource(ExternalDataSource):
     LOG.debug('Fetched from dreamschool', extra={'data':
       {'api_url': self.api_url,
        'status_code': r.status_code,
-        }})
+       }})
 
     if r.status_code != requests.codes.ok:
       LOG.warning('Dreamschool API response not OK', extra={'data':
         {'status_code': r.status_code,
          'api_url': self.api_url,
          'username': self.username,
-          }})
+         }})
       return None
 
     user_data = {}

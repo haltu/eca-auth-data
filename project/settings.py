@@ -21,7 +21,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-#
+
 
 """
 Django settings for auth-data project.
@@ -120,7 +120,7 @@ REST_FRAMEWORK = {
      ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication', # Included for easier debugging
+        'rest_framework.authentication.SessionAuthentication',  # Included for easier debugging
     ),
     'PAGINATE_BY': 10,
     'PAGINATE_BY_PARAM': 'page_size',  # Allow client to override, using `?page_size=xxx`.
@@ -129,7 +129,7 @@ REST_FRAMEWORK = {
 
 # external sources should configured as a list with 3 elements.
 # [module import, classname, kwargs dict]
-#'ldap_test_id': ['authdata.external_sources', 'TestLDAPDataSource', {'host': 'foo', 'username': 'bar', 'password': 'baz'}],
+# 'ldap_test_id': ['authdata.external_sources', 'TestLDAPDataSource', {'host': 'foo', 'username': 'bar', 'password': 'baz'}],
 AUTH_EXTERNAL_SOURCES = {
 }
 
@@ -138,7 +138,7 @@ AUTH_EXTERNAL_SOURCES = {
 # Everything in lowercase
 
 AUTHDATA_DREAMSCHOOL_ORG_MAP = {
-    u'kauniainen': { u'mäntymäen koulu': 3, u'kasavuoren koulu': 1},
+  u'kauniainen': {u'mäntymäen koulu': 3, u'kasavuoren koulu': 1},
 }
 
 try:

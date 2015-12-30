@@ -83,17 +83,17 @@ class TestLDAPDataSource(LDAPDataSource):
 
   school_id_map = _schoolid_generator
 
-  #'LdapKoulu1': '00001',
-  #'LdapKoulu2': '00002',
-  #'LdapKoulu3': '00003',
-  #'LdapKoulu4': '00004',
-  #'LdapKoulu5': '00005',
-  #'LdapKoulu6': '00006',
-  #'LdapKoulu7': '00007',
-  #'LdapKoulu8': '00008',
-  #'LdapKoulu9': '00009',
-  #'LdapKoulu10': '00010',
-  #'LdapKoulu11': '00011',
+  # 'LdapKoulu1': '00001',
+  # 'LdapKoulu2': '00002',
+  # 'LdapKoulu3': '00003',
+  # 'LdapKoulu4': '00004',
+  # 'LdapKoulu5': '00005',
+  # 'LdapKoulu6': '00006',
+  # 'LdapKoulu7': '00007',
+  # 'LdapKoulu8': '00008',
+  # 'LdapKoulu9': '00009',
+  # 'LdapKoulu10': '00010',
+  # 'LdapKoulu11': '00011',
   # etc...
 
   def __init__(self, *args, **kwargs):
@@ -257,7 +257,7 @@ class OuluLDAPDataSource(LDAPDataSource):
 
   def __init__(self, base_dn, *args, **kwargs):
     self.ldap_base_dn = base_dn
-    #self.ldap_filter = "(|(sAMAccountName={value})(userPrincipalName={value}@eduouka.fi))"
+    # self.ldap_filter = "(|(sAMAccountName={value})(userPrincipalName={value}@eduouka.fi))"
     self.ldap_filter = "(objectGUID={value})"
     """
     ldap_filter = Filter for finding the required user in an LDAP query,

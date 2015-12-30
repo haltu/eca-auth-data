@@ -70,6 +70,7 @@ class User(TimeStampedModel, AbstractUser):
   external_source = models.CharField(max_length=2000, blank=True, default='')
   external_id = models.CharField(max_length=2000, blank=True, default='')
 
+
 class Attribute(TimeStampedModel):
   name = models.CharField(max_length=2048, blank=True, null=True, default=None)
 

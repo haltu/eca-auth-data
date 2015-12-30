@@ -21,7 +21,6 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-#
 
 """
 WSGI config for auth-data project.
@@ -35,7 +34,7 @@ https://docs.djangoproject.com/en/1.7/howto/deployment/wsgi/
 import os
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "authdata.production")
 
-from django.core.wsgi import get_wsgi_application
+from django.core.wsgi import get_wsgi_application  # noqa
 application = get_wsgi_application()
 
 # vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2

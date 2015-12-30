@@ -40,8 +40,11 @@ router.register(r'attendance', AttendanceViewSet)
 
 
 urlpatterns = patterns('',
-    url(r'^api/1/user$', QueryView.as_view()), # This should be removed as "/user" and "/user/" are now different which is confusing. User "/query/" instead
+    url(r'^api/1/user$', QueryView.as_view()),  # This should be removed as "/user" and "/user/" are now different which is confusing. User "/query/" instead
     url(r'^api/1/query(/(?P<username>[\w._-]+))?/?$', QueryView.as_view()),
     url(r'^api/1/', include(router.urls)),
     url(r'^sysadmin/', include(admin.site.urls)),
 )
+
+# vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
+
