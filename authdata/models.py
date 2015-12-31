@@ -23,6 +23,12 @@
 # THE SOFTWARE.
 #
 
+"""
+.. autoclass:: Municipality
+.. autoclass:: School
+
+"""
+
 
 import logging
 from django.db import models
@@ -48,6 +54,8 @@ class Source(TimeStampedModel):
 
 
 class Municipality(TimeStampedModel):
+  """A country is split into regions, highest level of grouping for users.
+  """
   name = models.CharField(max_length=2048)
   municipality_id = models.CharField(max_length=2048)
   data_source = models.ForeignKey(Source)
@@ -57,6 +65,8 @@ class Municipality(TimeStampedModel):
 
 
 class School(TimeStampedModel):
+  """School is the second level of grouping of users, inside Municipality.
+  """
   name = models.CharField(max_length=2048)
   school_id = models.CharField(max_length=2048)
   municipality = models.ForeignKey(Municipality, related_name='schools')
