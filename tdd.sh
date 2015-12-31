@@ -25,6 +25,7 @@
 
 while true
 do
+  clear
   tox -e py27-django18
   inotifywait -r authdata -r external_ldap -r project -e move -e close_write
 done
