@@ -8,3 +8,4 @@ settings_local.py
 local_settings.py
 staticroot/
 newrelic.ini
+oulu_certificate
