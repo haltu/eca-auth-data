@@ -94,7 +94,6 @@ if 'test' in sys.argv:
       '--verbosity=2',
       '--with-coverage',
       '--cover-package=authdata',
-      '--cover-package=external_ldap',
       '--detailed-errors',
       '--nocapture',
   ]

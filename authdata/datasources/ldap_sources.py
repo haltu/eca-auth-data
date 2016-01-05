@@ -32,7 +32,7 @@ import logging
 import hashlib
 import ldap
 import base64
-from external_ldap.source import LDAPDataSource
+from authdata.datasources.ldap_base import LDAPDataSource
 
 LOG = logging.getLogger(__name__)
 

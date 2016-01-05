@@ -34,7 +34,7 @@ import requests
 
 from django.conf import settings
 
-from authdata.models import ExternalDataSource
+from authdata.datasources.base import ExternalDataSource
 
 LOG = logging.getLogger(__name__)
 

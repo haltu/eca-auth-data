@@ -27,7 +27,7 @@
 
 import logging
 import ldap
-from authdata.models import ExternalDataSource
+from authdata.datasources.base import ExternalDataSource
 
 LOG = logging.getLogger(__name__)
 
