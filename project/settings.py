@@ -129,7 +129,7 @@ REST_FRAMEWORK = {
 
 # external sources should configured as a list with 3 elements.
 # [module import, classname, kwargs dict]
-# 'ldap_test_id': ['authdata.external_sources', 'TestLDAPDataSource', {'host': 'foo', 'username': 'bar', 'password': 'baz'}],
+# 'ldap_test_id': ['authdata.datasources.ldap_base', 'TestLDAPDataSource', {'host': 'foo', 'username': 'bar', 'password': 'baz'}],
 AUTH_EXTERNAL_SOURCES = {
 }
 

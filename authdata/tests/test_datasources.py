@@ -32,10 +32,10 @@ from django.test import RequestFactory
 
 from authdata import models
 from authdata.datasources.base import ExternalDataSource
-import authdata.datasources.dreamschool_source
+import authdata.datasources.dreamschool
 from authdata.datasources.ldap_base import LDAPDataSource
-from authdata.datasources.ldap_sources import TestLDAPDataSource as LdapTest
-from authdata.datasources.ldap_sources import OuluLDAPDataSource
+from authdata.datasources.ldap_base import TestLDAPDataSource as LdapTest
+from authdata.datasources.oulu import OuluLDAPDataSource
 
 
 class TestExternalDataSource(TestCase):
@@ -71,11 +71,11 @@ class TestExternalDataSource(TestCase):
 class TestDreamschoolDataSource(TestCase):
 
   def setUp(self):
-    self.o = authdata.datasources.dreamschool_source.DreamschoolDataSource(api_url='mock://foo',
+    self.o = authdata.datasources.dreamschool.DreamschoolDataSource(api_url='mock://foo',
         username='foo', password='bar')
 
-    authdata.datasources.dreamschool_source.requests = mock.Mock()
-    authdata.datasources.dreamschool_source.requests.codes = requests.codes
+    authdata.datasources.dreamschool.requests = mock.Mock()
+    authdata.datasources.dreamschool.requests.codes = requests.codes
 
     data = {'objects': [
       {'id': 123,
@@ -87,7 +87,7 @@ class TestDreamschoolDataSource(TestCase):
     response_mock.status_code = requests.codes.ok
     response_mock.json.return_value = data
 
-    authdata.datasources.dreamschool_source.requests.get.return_value = response_mock
+    authdata.datasources.dreamschool.requests.get.return_value = response_mock
     self.factory = RequestFactory()
 
   def test_init(self):
