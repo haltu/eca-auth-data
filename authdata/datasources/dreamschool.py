@@ -164,7 +164,7 @@ class DreamschoolDataSource(ExternalDataSource):
   def _get_roles(self, user_data):
     """Create roles structure
 
-    Example::
+    Example of output::
 
       [
           {
@@ -305,7 +305,12 @@ class DreamschoolDataSource(ExternalDataSource):
       user_data = r.json()
     except ValueError:
       LOG.exception('Could not parse user data from dreamschool API')
-      return response
+      return {
+        'count': 0,
+        'next': None,
+        'previous': None,
+        'results': [],
+      }
 
     for d in user_data['objects']:
       user_id = d['id']
