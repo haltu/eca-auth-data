@@ -26,7 +26,7 @@
 while true
 do
   clear
-  tox -e py27-django18
+  tox -e py27
   inotifywait -r authdata -r project -e move -e close_write
 done
 
