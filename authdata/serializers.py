@@ -58,6 +58,7 @@ class QuerySerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(QuerySerializer):
+
   def attribute_data(self, obj):
     # attribute data is filtered. only attributes where source is requesting user's username are returned
     data = []
@@ -95,7 +96,7 @@ class UserAttributeSerializer(serializers.ModelSerializer):
   def save(self, *args, **kwargs):
     username = self.context['request'].user.username
     data_source_obj, _ = Source.objects.get_or_create(name=username)
-    self.object.data_source = data_source_obj
+    kwargs['data_source'] = data_source_obj
     return super(UserAttributeSerializer, self).save(*args, **kwargs)
 
 
@@ -108,7 +109,7 @@ class MunicipalitySerializer(serializers.ModelSerializer):
   def save(self, *args, **kwargs):
     username = self.context['request'].user.username
     data_source_obj, _ = Source.objects.get_or_create(name=username)
-    self.object.data_source = data_source_obj
+    kwargs['data_source'] = data_source_obj
     return super(MunicipalitySerializer, self).save(*args, **kwargs)
 
 
@@ -121,7 +122,7 @@ class SchoolSerializer(serializers.ModelSerializer):
   def save(self, *args, **kwargs):
     username = self.context['request'].user.username
     data_source_obj, _ = Source.objects.get_or_create(name=username)
-    self.object.data_source = data_source_obj
+    kwargs['data_source'] = data_source_obj
     return super(SchoolSerializer, self).save(*args, **kwargs)
 
 
@@ -139,7 +140,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
   def save(self, *args, **kwargs):
     username = self.context['request'].user.username
     data_source_obj, _ = Source.objects.get_or_create(name=username)
-    self.object.data_source = data_source_obj
+    kwargs['data_source'] = data_source_obj
     return super(AttendanceSerializer, self).save(*args, **kwargs)
 
 # vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
