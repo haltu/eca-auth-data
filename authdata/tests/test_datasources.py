@@ -26,7 +26,6 @@
 
 import mock
 import requests
-# from pprint import pprint
 
 from django.test import TestCase
 from django.test import RequestFactory
@@ -35,9 +34,8 @@ from django.test import override_settings
 from authdata import models
 from authdata.datasources.base import ExternalDataSource
 import authdata.datasources.dreamschool
-from authdata.datasources.ldap_base import LDAPDataSource
-from authdata.datasources.ldap_base import TestLDAPDataSource as LdapTest
-from authdata.datasources.oulu import OuluLDAPDataSource
+import authdata.datasources.ldap_base
+import authdata.datasources.oulu
 
 
 AUTH_EXTERNAL_SOURCES = {
@@ -412,23 +410,152 @@ class TestDreamschoolDataSource(TestCase):
 
 class TestLDAPDataSource(TestCase):
 
+  def setUp(self):
+    self.obj = authdata.datasources.ldap_base.LDAPDataSource(host='host',
+        username='foo', password='bar', external_source='foo')
+
+    authdata.datasources.ldap_base.ldap = mock.Mock()
+
   def test_init(self):
-    obj = LDAPDataSource(host='host', username='foo', password='bar')
-    self.assertTrue(obj)
+    self.assertTrue(self.obj)
+    self.assertEqual(self.obj.external_source, 'foo')
+
+  def test_connect(self):
+    self.obj.connect()
+
+  def test_query(self):
+    self.obj.query(query_filter=None)
+
+  def test_get_municipality_id(self):
+    muni_id = self.obj.get_municipality_id(name='foo')
+    self.assertEqual(muni_id, 'foo')
+
+    self.obj.municipality_id_map = {'a': '123'}
+    muni_id = self.obj.get_municipality_id(name='a')
+    self.assertEqual(muni_id, '123')
+
+  def test_get_school_id(self):
+    muni_id = self.obj.get_school_id(name='foo')
+    self.assertEqual(muni_id, 'foo')
+
+    self.obj.school_id_map = {'a': '123'}
+    muni_id = self.obj.get_school_id(name='a')
+    self.assertEqual(muni_id, '123')
 
 
 class TestLdapTest(TestCase):
 
+  def setUp(self):
+    self.obj = authdata.datasources.ldap_base.TestLDAPDataSource(host='host',
+        username='foo', password='bar', external_source='foo')
+    authdata.datasources.ldap_base.ldap = mock.Mock()
+
   def test_init(self):
-    obj = LdapTest(host='host', username='foo', password='bar')
-    self.assertTrue(obj)
+    self.assertTrue(self.obj)
+    self.assertEqual(self.obj.external_source, 'foo')
+
+  def test_school_id_map(self):
+    name = 'Ääkkös abc 123'
+    mapper = self.obj.school_id_map()
+    self.assertEqual('00123', mapper.get(name))
+
+  def test_oid(self):
+    username = 'abc-123'
+    expected_oid = 'MPASSOID.c5af545a6479eb503ce5d'
+    oid = self.obj.get_oid(username)
+    self.assertEqual(oid, expected_oid)
+
+  def test_get_data_index_error(self):
+    with mock.patch.object(self.obj, 'query') as mock_query:
+      mock_query.side_effect = IndexError('foo')
+      data = self.obj.get_data(external_id=123)
+      self.assertEqual(data, None)
+
+  def test_get_data(self):
+    self.assertFalse(authdata.models.User.objects.count())
+    r = [(
+        'cn=bar,ou=Opettajat,ou=People,ou=LdapKoulu1,ou=KuntaYksi,dc=mpass-test,dc=csc,dc=fi',
+        {'cn': ['bar'],
+         'givenName': ['First'],
+         'mail': ['bar@mpass-test.invalid'],
+         'objectClass': ['top', 'inetOrgPerson'],
+         'sn': ['Opettaja10013'],
+         'title': ['Opettaja'],
+         'uid': ['bar'],
+         'userPassword': ['foo'],
+         'departmentNumber': ['Group1'],
+         }
+    )]
+    with mock.patch.object(self.obj, 'query', return_value=r):
+      query_result = self.obj.get_data(external_id=123)
+
+    expected_data = {
+        'username': 'MPASSOID.c38029f36d3aebd850cfb',
+        'last_name': 'Opettaja10013',
+        'first_name': 'First',
+        'roles': [
+          {
+            'group': 'Group1',
+            'municipality': 'KuntaYksi',
+            'role': 'Opettaja',
+            'school': 'LdapKoulu1',
+          }],
+        'attributes': [],
+    }
+
+    self.assertEqual(query_result, expected_data)
+    # User is provisioned
+    self.assertEquals(authdata.models.User.objects.count(), 1)
+
+  def test_get_user_data(self):
+    self.assertFalse(authdata.models.User.objects.count())
+    r = [(
+        'cn=bar,ou=Opettajat,ou=People,ou=LdapKoulu1,ou=KuntaYksi,dc=mpass-test,dc=csc,dc=fi',
+        {'cn': ['bar'],
+         'givenName': ['First'],
+         'mail': ['bar@mpass-test.invalid'],
+         'objectClass': ['top', 'inetOrgPerson'],
+         'sn': ['Opettaja10013'],
+         'title': ['Opettaja'],
+         'uid': ['bar'],
+         'userPassword': ['foo'],
+         'departmentNumber': ['Group1'],
+         }
+    )]
+    mock_request = mock.Mock()
+    mock_request.GET = {'school': u'Ääkkösschool', 'group': 'Ääkköskoulu'}
+    with mock.patch.object(self.obj, 'query', return_value=r):
+      query_result = self.obj.get_user_data(request=mock_request)
+
+    expected_data = {
+        'count': 1,
+        'next': None,
+        'previous': None,
+        'results': [{'attributes': [],
+              'first_name': 'First',
+              'last_name': 'Opettaja10013',
+              'roles': [{'group': 'Group1',
+                         'municipality': '1234567-8',
+                         'role': 'Opettaja',
+                         'school': '00001'}],
+        'username': 'MPASSOID.c38029f36d3aebd850cfb'}]
+    }
+
+    self.assertEqual(query_result, expected_data)
+    # User is provisioned
+    self.assertEquals(authdata.models.User.objects.count(), 1)
 
 
 class TestOuluLDAPDataSource(TestCase):
 
+  def setUp(self):
+    self.obj = authdata.datasources.oulu.OuluLDAPDataSource(base_dn='base',
+        host='host', username='foo', password='bar', external_source='foo')
+    authdata.datasources.oulu.ldap = mock.Mock()
+
   def test_init(self):
-    obj = OuluLDAPDataSource(host='host', username='foo', password='bar', base_dn='foo')
-    self.assertTrue(obj)
+    self.assertTrue(self.obj)
+    self.assertEqual(self.obj.external_source, 'foo')
 
 
 # vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
