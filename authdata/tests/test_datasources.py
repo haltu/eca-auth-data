@@ -24,6 +24,8 @@
 # THE SOFTWARE.
 # pylint: disable=locally-disabled, no-member, protected-access
 
+import base64
+
 import mock
 import requests
 
@@ -455,7 +457,7 @@ class TestLdapTest(TestCase):
     self.assertEqual(self.obj.external_source, 'foo')
 
   def test_school_id_map(self):
-    name = 'Ääkkös abc 123'
+    name = u'Ääkkös abc 123'
     mapper = self.obj.school_id_map()
     self.assertEqual('00123', mapper.get(name))
 
@@ -464,6 +466,7 @@ class TestLdapTest(TestCase):
     expected_oid = 'MPASSOID.c5af545a6479eb503ce5d'
     oid = self.obj.get_oid(username)
     self.assertEqual(oid, expected_oid)
+    self.assertEqual(len(oid), 30)
 
   def test_get_data_index_error(self):
     with mock.patch.object(self.obj, 'query') as mock_query:
@@ -523,7 +526,7 @@ class TestLdapTest(TestCase):
          }
     )]
     mock_request = mock.Mock()
-    mock_request.GET = {'school': u'Ääkkösschool', 'group': 'Ääkköskoulu'}
+    mock_request.GET = {'school': u'Ääkkösschool', 'group': u'Ääkköskoulu'}
     with mock.patch.object(self.obj, 'query', return_value=r):
       query_result = self.obj.get_user_data(request=mock_request)
 
@@ -542,6 +545,7 @@ class TestLdapTest(TestCase):
     }
 
     self.assertEqual(query_result, expected_data)
+
     # User is provisioned
     self.assertEquals(authdata.models.User.objects.count(), 1)
 
@@ -553,10 +557,142 @@ class TestOuluLDAPDataSource(TestCase):
         host='host', username='foo', password='bar', external_source='foo')
     authdata.datasources.oulu.ldap = mock.Mock()
 
+    self.q_results = [(
+        'cn=bar,ou=Opettajat,ou=People,ou=LdapKoulu1,ou=KuntaYksi,dc=mpass-test,dc=csc,dc=fi',
+        {'cn': ['bar'],
+         'givenName': ['First'],
+         'mail': ['bar@mpass-test.invalid'],
+         'objectClass': ['top', 'inetOrgPerson'],
+         'sn': ['Last'],
+         'title': ['Opettaja'],
+         'uid': ['uid1'],
+         'userPassword': ['password1'],
+         'department': ['Group1'],
+         'objectGUID': ['username1'],
+         'physicalDeliveryOfficeName': ['School1'],
+         }
+    )]
+
   def test_init(self):
     self.assertTrue(self.obj)
     self.assertEqual(self.obj.external_source, 'foo')
 
+  def test_school_id_map(self):
+    self.assertEqual(self.obj.school_id_map.get(u'Ääkkös koulu 123'), None)
+    self.assertEqual(self.obj.school_id_map.get(u'Herukan koulu'), '06347')
+
+  def test_connect(self):
+    self.obj.connect()
+
+  def test_oid(self):
+    username = 'abc-123'
+    expected_oid = 'MPASSOID.1a1786a2133f1751de913'
+    oid = self.obj.get_oid(username)
+    self.assertEqual(oid, expected_oid)
+    self.assertEqual(len(oid), 30)
+
+  def test_external_id(self):
+    query_result = ('foo', {})
+    with self.assertRaises(KeyError):
+      self.obj.get_external_id(query_result)
+
+    result = self.obj.get_external_id(query_result=self.q_results[0])
+    self.assertEqual(result, 'uid1')
+
+  def test_username(self):
+    result = self.obj.get_username(query_result=self.q_results[0])
+    self.assertEqual(result, 'username1')
+
+  def test_first_name(self):
+    result = self.obj.get_first_name(query_result=self.q_results[0])
+    self.assertEqual(result, 'First')
+
+  def test_last_name(self):
+    result = self.obj.get_last_name(query_result=self.q_results[0])
+    self.assertEqual(result, 'Last')
+
+  def test_get_municipality(self):
+    result = self.obj.get_municipality()
+    self.assertEqual(result, 'Oulu')
+
+  def test_school(self):
+    result = self.obj.get_school(query_result=self.q_results[0])
+    self.assertEqual(result, 'School1')
+
+  def test_role(self):
+    result = self.obj.get_role(query_result=self.q_results[0])
+    self.assertEqual(result, 'Opettaja')
+
+  def test_group(self):
+    result = self.obj.get_group(query_result=self.q_results[0])
+    self.assertEqual(result, 'Group1')
+
+  def test_get_data_index_error(self):
+    username = base64.b64encode('username1')
+    with mock.patch.object(self.obj, 'query') as mock_query:
+      mock_query.side_effect = IndexError('foo')
+      data = self.obj.get_data(external_id=username)
+      self.assertEqual(data, None)
+
+  def test_get_data(self):
+    self.assertFalse(authdata.models.User.objects.count())
+    username = base64.b64encode('username1')
+
+    with mock.patch.object(self.obj, 'query', return_value=self.q_results):
+      query_result = self.obj.get_data(external_id=username)
+
+    expected_data = {
+        'username': 'MPASSOID.b51110b8d091b6792abde',
+        'last_name': 'Last',
+        'first_name': 'First',
+        'roles': [
+          {
+            'group': 'Group1',
+            'municipality': '0187690-1',
+            'role': 'Opettaja',
+            'school': 'School1',
+          }],
+        'attributes': [],
+    }
+
+    self.assertEqual(query_result, expected_data)
+
+    # User is provisioned
+    self.assertEquals(authdata.models.User.objects.count(), 1)
+
+  def test_get_user_data(self):
+    self.assertFalse(authdata.models.User.objects.count())
+
+    mock_request = mock.Mock()
+    mock_request.GET = {'school': u'Ääkkösschool', 'group': u'Ääkköskoulu'}
+
+    with mock.patch.object(self.obj, 'query', return_value=self.q_results):
+      query_result = self.obj.get_user_data(request=mock_request)
+
+    expected_data = {
+        'count': 1,
+        'next': None,
+        'previous': None,
+        'results': [
+          {'username': 'MPASSOID.b51110b8d091b6792abde',
+          'last_name': 'Last',
+          'first_name': 'First',
+          'roles': [
+            {
+              'group': 'Group1',
+              'municipality': '0187690-1',
+              'role': 'Opettaja',
+              'school': 'School1',
+            }],
+          'attributes': [],
+           }
+
+        ]
+    }
+
+    self.assertEqual(query_result, expected_data)
+    # User is provisioned
+    self.assertEquals(authdata.models.User.objects.count(), 1)
 
 # vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
 
