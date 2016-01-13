@@ -1,3 +1,4 @@
+
 # -*- encoding: utf-8 -*-
 
 # The MIT License (MIT)
@@ -87,7 +88,10 @@ class QueryView(generics.RetrieveAPIView):
         try:
           user_data = get_external_user_data(user_obj.external_source, user_obj.external_id)
         except ImportError:
-          # TODO: configuration or data error, log this
+          LOG.error('Can not import external authentication source', extra={'data': {'external_source': repr(user_obj.external_source)}})
+          return Response(None)
+        except KeyError:
+          LOG.error('External source not configured', extra={'data': {'external_source': repr(user_obj.external_source)}})
           return Response(None)
         if user_data is None:
           # queried user does not exist in the external source
