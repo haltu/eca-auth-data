@@ -242,5 +242,177 @@ class TestQueryView(APITestCase):
     expected['attributes'] = [{'name': u'dreamschool', 'value': u'123'}]
     self.assertEqual(response.data, expected)
 
+  def test_get_user_fetch_doesnt_exist(self, requests_mock):
+    self.client.force_authenticate(user=self.user)
+
+    with mock.patch('authdata.views.get_external_user_data', return_value=None):
+      result = self.client.get('/api/1/user?dreamschool=123')
+
+    self.assertEqual(result.status_code, 200, repr(result))
+    self.assertEqual(result.data, None)
+
+  def test_get_user_external_source_import_error(self, requests_mock):
+    self.client.force_authenticate(user=self.user)
+
+    with mock.patch('authdata.views.get_external_user_data', side_effect=ImportError):
+      result = self.client.get('/api/1/user?dreamschool=123')
+
+    self.assertEqual(result.status_code, 404, repr(result))
+
+
+class TestUserFilter(APITestCase):
+
+  def test_timestamp_filter(self):
+    obj = authdata.views.UserFilter()
+    date = 0
+
+    for _ in xrange(10):
+      f.UserFactory()
+
+    qs = authdata.models.User.objects.all()
+
+    qs_out = obj.timestamp_filter(qs, date)
+    self.assertTrue(qs_out is not None)
+
+
+@override_settings(AUTH_EXTERNAL_SOURCES=AUTH_EXTERNAL_SOURCES)
+@override_settings(AUTH_EXTERNAL_ATTRIBUTE_BINDING=AUTH_EXTERNAL_ATTRIBUTE_BINDING)
+@override_settings(AUTH_EXTERNAL_MUNICIPALITY_BINDING=AUTH_EXTERNAL_MUNICIPALITY_BINDING)
+@override_settings(AUTHDATA_DREAMSCHOOL_ORG_MAP=AUTHDATA_DREAMSCHOOL_ORG_MAP)
+class TestUserViewSet(APITestCase):
+
+  def setUp(self):
+    self.request_factory = APIRequestFactory()
+    self.user = f.UserFactory.create()
+
+  def test_list(self):
+    request = self.request_factory.get('/list', {'municipality': 'Bar'})
+    force_authenticate(request, user=self.user)
+    view = authdata.views.UserViewSet.as_view({'get': 'list'})
+
+    response = view(request)
+    self.assertEquals(response.status_code, 200)
+
+  def test_list_import_error(self):
+    request = self.request_factory.get('/list', {'municipality': 'Doesnotexist'})
+    force_authenticate(request, user=self.user)
+    view = authdata.views.UserViewSet.as_view({'get': 'list'})
+
+    response = view(request)
+    self.assertEquals(response.status_code, 200)
+
+
+class TestAttributeViewSet(APITestCase):
+
+  def setUp(self):
+    self.user = f.UserFactory.create()
+    self.client.force_authenticate(user=self.user)
+
+  def test_list(self):
+    attribute = f.AttributeFactory()
+    result = self.client.get('/api/1/attribute/')
+    self.assertEqual(result.status_code, 200, repr(result))
+    self.assertEqual(result.data[0]['name'], attribute.name)
+
+  def test_delete(self):
+    attribute = f.AttributeFactory()
+    result = self.client.delete('/api/1/attribute/%s/' % attribute.pk)
+    # Not allowed. Read only
+    self.assertEqual(result.status_code, 405)
+
+
+class TestUserAttributeViewSet(APITestCase):
+
+  def setUp(self):
+    self.request_factory = APIRequestFactory()
+    self.user = f.UserFactory.create()
+    self.client.force_authenticate(user=self.user)
+
+  def test_list(self):
+    request = self.request_factory.get('/list')
+    force_authenticate(request, user=self.user)
+    view = authdata.views.UserViewSet.as_view({'get': 'list'})
+
+    response = view(request)
+    self.assertEquals(response.status_code, 200)
+
+  def test_delete(self):
+    user_attr = f.UserAttributeFactory()
+    result = self.client.delete('/api/1/userattribute/%s/' % user_attr.pk)
+    self.assertEqual(result.status_code, 204)
+
+
+class TestMunicipalityViewSet(APITestCase):
+
+  def setUp(self):
+    self.user = f.UserFactory.create()
+    self.client.force_authenticate(user=self.user)
+
+  def test_list(self):
+    muni = f.MunicipalityFactory()
+    result = self.client.get('/api/1/municipality/')
+    self.assertEqual(result.status_code, 200)
+    self.assertEqual(result.data[0]['name'], muni.name)
+
+  def test_delete(self):
+    muni = f.MunicipalityFactory()
+    result = self.client.delete('/api/1/municipality/%s/' % muni.pk)
+    self.assertEqual(result.status_code, 204)
+
+
+class TestSchoolViewSet(APITestCase):
+
+  def setUp(self):
+    self.user = f.UserFactory.create()
+    self.client.force_authenticate(user=self.user)
+
+  def test_list(self):
+    school = f.SchoolFactory()
+    result = self.client.get('/api/1/school/')
+    self.assertEqual(result.status_code, 200)
+    self.assertEqual(result.data[0]['name'], school.name)
+
+  def test_delete(self):
+    school = f.SchoolFactory()
+    result = self.client.delete('/api/1/school/%s/' % school.pk)
+    self.assertEqual(result.status_code, 204)
+
+
+class TestRoleViewSet(APITestCase):
+
+  def setUp(self):
+    self.user = f.UserFactory.create()
+    self.client.force_authenticate(user=self.user)
+
+  def test_list(self):
+    role = f.RoleFactory()
+    result = self.client.get('/api/1/role/')
+    self.assertEqual(result.status_code, 200)
+    self.assertEqual(result.data[0]['name'], role.name)
+
+  def test_delete(self):
+    role = f.RoleFactory()
+    result = self.client.delete('/api/1/role/%s/' % role.pk)
+    # Not allowed. Read only
+    self.assertEqual(result.status_code, 405)
+
+
+class TestAttendanceViewSet(APITestCase):
+
+  def setUp(self):
+    self.user = f.UserFactory.create()
+    self.client.force_authenticate(user=self.user)
+
+  def test_list(self):
+    attendance = f.AttendanceFactory()
+    result = self.client.get('/api/1/attendance/')
+    self.assertEqual(result.status_code, 200, repr(result))
+    self.assertEqual(result.data[0]['group'], attendance.group)
+
+  def test_delete(self):
+    attendance = f.AttendanceFactory()
+    result = self.client.delete('/api/1/attendance/%s/' % attendance.pk)
+    self.assertEqual(result.status_code, 204, repr(result))
+
 # vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
 

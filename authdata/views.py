@@ -120,7 +120,8 @@ class QueryView(generics.RetrieveAPIView):
             return Response(user_data)
 
           except ImportError as e:
-            LOG.error('Could not import external data source', extra={'data': {'error': e, 'attr': repr(attr)}})
+            LOG.error('Could not import external data source',
+                extra={'data': {'error': unicode(e), 'attr': repr(attr)}})
             # TODO: error handling
             # flow back to normal implementation most likely return empty
         break
@@ -196,7 +197,6 @@ class UserViewSet(viewsets.ModelViewSet):
                 extra={'data': {'error': e}})
         # TODO: error handling
         # flow back to normal implementation most likely return empty
-        pass
 
     return super(UserViewSet, self).list(request, *args, **kwargs)
 
