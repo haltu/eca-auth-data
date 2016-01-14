@@ -92,9 +92,9 @@ if 'test' in sys.argv:
 
   NOSE_ARGS = [
       '--verbosity=2',
-      '--with-coverage',
-      '--cover-html',
-      '--cover-package=authdata',
+      #'--with-coverage',
+      #'--cover-html',
+      #'--cover-package=authdata',
       '--detailed-errors',
       '--nocapture',
   ]
