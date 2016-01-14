@@ -69,9 +69,9 @@ AUTHDATA_DREAMSCHOOL_ORG_MAP = {
 
 DS_DATA = {
   'id': 123,
-  'username': 'user',
-  'first_name': 'first',
-  'last_name': 'last',
+  'username': u'user',
+  'first_name': u'first',
+  'last_name': u'last',
   'roles': [
     {
      'permissions': [{
@@ -84,23 +84,34 @@ DS_DATA = {
     {
       'organisation': {
           'id': 1,
-          'title': 'Äö school',
+          'title': u'Äö school',
       },
-      'title': 'Group1',
+      'title': u'Group1',
     },
   ],
 }
 
 DS_EXPECTED = {
  'attributes': [],
- 'first_name': 'first',
- 'last_name': 'last',
- 'roles': [{'group': 'Group1',
+ 'first_name': u'first',
+ 'last_name': u'last',
+ 'roles': [{'group': u'Group1',
             'municipality': u'Bar',
-            'role': 'teacher',
-            'school': 'Äö school'}],
- 'username': 'MPASSOID.ea5f9ca03f6edf5a0409d',
+            'role': u'teacher',
+            'school': u'Äö school'}],
+ 'username': u'MPASSOID.ea5f9ca03f6edf5a0409d',
 }
+
+
+class TestAdminView(APITestCase):
+
+  def setUp(self):
+    self.user = f.UserFactory.create(is_superuser=True, is_staff=True)
+    self.client.force_authenticate(user=self.user)
+
+  def test_login_page(self):
+    result = self.client.get('/sysadmin/')
+    self.assertEqual(result.status_code, 302)
 
 
 @override_settings(AUTH_EXTERNAL_SOURCES=AUTH_EXTERNAL_SOURCES)
@@ -200,6 +211,22 @@ class TestQueryView(APITestCase):
     self.assertEqual(response.status_code, 200)
     self.assertEqual(response.data, None)
 
+  def test_get_user_external_source_data_is_none(self, requests_mock):
+    request = self.request_factory.get('/api/1/users')
+    force_authenticate(request, user=self.user)
+    view = authdata.views.QueryView.as_view()
+
+    self.user.external_source = 'dreamschool'
+    self.user.external_id = 123
+    self.user.save()
+
+    with mock.patch('authdata.views.get_external_user_data') as ext_mock:
+      ext_mock.return_value = None
+      response = view(request, username=self.user.username)
+
+    self.assertEqual(response.status_code, 200)
+    self.assertEqual(response.data, None)
+
   def test_get_user_external(self, requests_mock):
     ds_response_mock = mock.Mock()
     ds_response_mock.status_code = 200
@@ -259,6 +286,36 @@ class TestQueryView(APITestCase):
 
     self.assertEqual(result.status_code, 404, repr(result))
 
+  def test_get_object_with_attributes(self, requests_mock):
+    ds_response_mock = mock.Mock()
+    ds_response_mock.status_code = 200
+    ds_response_mock.json.return_value = DS_DATA
+    requests_mock.codes = requests.codes
+    requests_mock.get.return_value = ds_response_mock
+
+    self.client.force_authenticate(user=self.user)
+    f.UserAttributeFactory(user=self.user, attribute__name='foo', value='bar')
+    result = self.client.get('/api/1/user?dreamschool=123&foo=bar&zao=zup')
+    self.assertEqual(result.status_code, 200)
+
+  def test_get_user_fetch_no_attribute_binding(self, requests_mock):
+    ds_response_mock = mock.Mock()
+    ds_response_mock.status_code = 200
+    ds_response_mock.json.return_value = DS_DATA
+    requests_mock.codes = requests.codes
+    requests_mock.get.return_value = ds_response_mock
+
+    self.client.force_authenticate(user=self.user)
+    f.UserAttributeFactory(user=self.user, attribute__name='foo', value='bar')
+    result = self.client.get('/api/1/user?foo=123&zao=zup')
+    self.assertEqual(result.status_code, 404)
+
+  def test_get_object_no_attributes(self, request_mock):
+    self.client.force_authenticate(user=self.user)
+    f.UserAttributeFactory(attribute__name='foo', value='bar')
+    result = self.client.get('/api/1/user')
+    self.assertEqual(result.status_code, 404)
+
 
 class TestUserFilter(APITestCase):
 
@@ -270,35 +327,43 @@ class TestUserFilter(APITestCase):
       f.UserFactory()
 
     qs = authdata.models.User.objects.all()
-
     qs_out = obj.timestamp_filter(qs, date)
     self.assertTrue(qs_out is not None)
+
+  def test_timestamp_filter_value_error(self):
+    obj = authdata.views.UserFilter()
+    qs = authdata.models.User.objects.all()
+    qs_out = obj.timestamp_filter(queryset=qs, value='')
+    self.assertEqual(type(qs_out.none()), type(qs_out))
 
 
 @override_settings(AUTH_EXTERNAL_SOURCES=AUTH_EXTERNAL_SOURCES)
 @override_settings(AUTH_EXTERNAL_ATTRIBUTE_BINDING=AUTH_EXTERNAL_ATTRIBUTE_BINDING)
 @override_settings(AUTH_EXTERNAL_MUNICIPALITY_BINDING=AUTH_EXTERNAL_MUNICIPALITY_BINDING)
 @override_settings(AUTHDATA_DREAMSCHOOL_ORG_MAP=AUTHDATA_DREAMSCHOOL_ORG_MAP)
+@mock.patch('authdata.datasources.dreamschool.requests')
 class TestUserViewSet(APITestCase):
 
   def setUp(self):
     self.request_factory = APIRequestFactory()
     self.user = f.UserFactory.create()
+    self.client.force_authenticate(user=self.user)
 
-  def test_list(self):
-    request = self.request_factory.get('/list', {'municipality': 'Bar'})
-    force_authenticate(request, user=self.user)
-    view = authdata.views.UserViewSet.as_view({'get': 'list'})
+  def test_list_user_data(self, requests_mock):
+    ds_response_mock = mock.Mock()
+    ds_response_mock.status_code = 200
+    ds_response_mock.json.return_value = {'objects': [DS_DATA]}
+    requests_mock.get.return_value = ds_response_mock
+    requests_mock.codes = requests.codes
 
-    response = view(request)
+    response = self.client.get('/api/1/user/?municipality=Bar')
     self.assertEquals(response.status_code, 200)
 
-  def test_list_import_error(self):
-    request = self.request_factory.get('/list', {'municipality': 'Doesnotexist'})
-    force_authenticate(request, user=self.user)
-    view = authdata.views.UserViewSet.as_view({'get': 'list'})
-
-    response = view(request)
+  def test_list_import_error(self, requests_mock):
+    with mock.patch('authdata.views.importlib') as importlib_mock:
+      importlib_mock.import_module = mock.Mock()
+      importlib_mock.import_module.side_effect = ImportError
+      response = self.client.get('/api/1/user/?municipality=Bar')
     self.assertEquals(response.status_code, 200)
 
 

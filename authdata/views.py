@@ -194,7 +194,7 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(user_data)
       except ImportError as e:
         LOG.error('Could not import external data source',
-                extra={'data': {'error': e}})
+                extra={'data': {'error': unicode(e)}})
         # TODO: error handling
         # flow back to normal implementation most likely return empty
 
