@@ -21,7 +21,6 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-#
 
 import sys
 from project.settings import *
@@ -92,9 +91,6 @@ if 'test' in sys.argv:
 
   NOSE_ARGS = [
       '--verbosity=2',
-      #'--with-coverage',
-      #'--cover-html',
-      #'--cover-package=authdata',
       '--detailed-errors',
       '--nocapture',
   ]
