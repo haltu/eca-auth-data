@@ -1,3 +1,0 @@
--r requirements.txt
-
-Django==1.8.7
