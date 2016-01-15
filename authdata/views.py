@@ -46,6 +46,7 @@ def get_external_user_data(external_source, external_id):
   Raises ImportError if external source configuration is wrong
   """
   source = settings.AUTH_EXTERNAL_SOURCES[external_source]
+  LOG.debug('Trying to import module of external authentication source', extra={'data': {'module_name': source[0]}})
   handler_module = importlib.import_module(source[0])
   kwargs = source[2]
   handler = getattr(handler_module, source[1])(**kwargs)
