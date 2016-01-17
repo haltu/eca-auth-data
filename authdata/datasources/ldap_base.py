@@ -24,6 +24,7 @@
 # THE SOFTWARE.
 
 
+import hashlib
 import logging
 import string
 
@@ -146,9 +147,8 @@ class TestLDAPDataSource(LDAPDataSource):
     """
     @classmethod
     def get(cls, name, default=None):
-      num = name.strip(string.ascii_letters)
-      num = int(num)
-      return '%05d' % num
+      num = ''.join(i for i in name if i in string.digits)
+      return '%05d' % int(num)
 
   school_id_map = _schoolid_generator
 

@@ -198,11 +198,11 @@ class OuluLDAPDataSource(LDAPDataSource):
     }
 
   def get_user_data(self, request):
-    ldap_filter = "(&(objectCategory=person)(objectClass=user))"
+    ldap_filter = u'(&(objectCategory=person)(objectClass=user))'
     if 'school' in request.GET:
-      ldap_filter = '(&(physicalDeliveryOfficeName={school}){filter_base})'.format(school=request.GET['school'], filter_base=ldap_filter)
+      ldap_filter = u'(&(physicalDeliveryOfficeName={school}){filter_base})'.format(school=request.GET['school'], filter_base=ldap_filter)
     if 'group' in request.GET and request.GET['group'] != '':
-      ldap_filter = '(&(department={group}){filter_base})'.format(group=request.GET['group'], filter_base=ldap_filter)
+      ldap_filter = u'(&(department={group}){filter_base})'.format(group=request.GET['group'], filter_base=ldap_filter)
     query_results = self.query(ldap_filter)
     response = []
 

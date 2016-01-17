@@ -1,3 +1,4 @@
+
 # -*- encoding: utf-8 -*-
 
 # The MIT License (MIT)
@@ -45,6 +46,7 @@ def get_external_user_data(external_source, external_id):
   Raises ImportError if external source configuration is wrong
   """
   source = settings.AUTH_EXTERNAL_SOURCES[external_source]
+  LOG.debug('Trying to import module of external authentication source', extra={'data': {'module_name': source[0]}})
   handler_module = importlib.import_module(source[0])
   kwargs = source[2]
   handler = getattr(handler_module, source[1])(**kwargs)
@@ -87,7 +89,10 @@ class QueryView(generics.RetrieveAPIView):
         try:
           user_data = get_external_user_data(user_obj.external_source, user_obj.external_id)
         except ImportError:
-          # TODO: configuration or data error, log this
+          LOG.error('Can not import external authentication source', extra={'data': {'external_source': repr(user_obj.external_source)}})
+          return Response(None)
+        except KeyError:
+          LOG.error('External source not configured', extra={'data': {'external_source': repr(user_obj.external_source)}})
           return Response(None)
         if user_data is None:
           # queried user does not exist in the external source
@@ -116,7 +121,8 @@ class QueryView(generics.RetrieveAPIView):
             return Response(user_data)
 
           except ImportError as e:
-            LOG.error('Could not import external data source', extra={'data': {'error': e, 'attr': repr(attr)}})
+            LOG.error('Could not import external data source',
+                extra={'data': {'error': unicode(e), 'attr': repr(attr)}})
             # TODO: error handling
             # flow back to normal implementation most likely return empty
         break
@@ -189,10 +195,9 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(user_data)
       except ImportError as e:
         LOG.error('Could not import external data source',
-                extra={'data': {'error': e}})
+                extra={'data': {'error': unicode(e)}})
         # TODO: error handling
         # flow back to normal implementation most likely return empty
-        pass
 
     return super(UserViewSet, self).list(request, *args, **kwargs)
 

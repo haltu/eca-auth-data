@@ -38,6 +38,14 @@ class TimeStampedModel(models.Model):
     abstract = True
 
 
+class User(TimeStampedModel, AbstractUser):
+  external_source = models.CharField(max_length=2000, blank=True, default='')
+  external_id = models.CharField(max_length=2000, blank=True, default='')
+
+  def __unicode__(self):
+    return self.username
+
+
 class Source(TimeStampedModel):
   name = models.CharField(max_length=2048)
 
@@ -64,11 +72,6 @@ class School(TimeStampedModel):
     return "%s / %s" % (self.name, self.municipality)
 
 
-class User(TimeStampedModel, AbstractUser):
-  external_source = models.CharField(max_length=2000, blank=True, default='')
-  external_id = models.CharField(max_length=2000, blank=True, default='')
-
-
 class Attribute(TimeStampedModel):
   name = models.CharField(max_length=2048, blank=True, null=True, default=None)
 
@@ -84,7 +87,7 @@ class UserAttribute(TimeStampedModel):
   disabled_at = models.DateTimeField(null=True, blank=True)
 
   def __unicode__(self):
-    return "%s: %s" % (self.attribute, self.value)
+    return u'%s: %s' % (self.attribute, self.value)
 
 
 class Role(TimeStampedModel):
@@ -102,7 +105,7 @@ class Attendance(TimeStampedModel):
   data_source = models.ForeignKey(Source, related_name='attendances')
 
   def __unicode__(self):
-    return "%s: %s / %s" % (self.role, self.school.name, self.school.municipality.name)
+    return u'%s: %s / %s' % (self.role, self.school.name, self.school.municipality.name)
 
 
 # vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2

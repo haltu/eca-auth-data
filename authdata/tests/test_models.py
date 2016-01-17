@@ -34,7 +34,7 @@ class TestUser(TestCase):
   def test_user(self):
     o = f.UserFactory()
     self.assertTrue(o)
-    self.assertTrue(unicode(o))
+    self.assertTrue(unicode(o) == o.username)
     u = models.User.objects.create(username='foo')
     u.email = 'foo@bar.com'
     u.save()
@@ -49,47 +49,94 @@ class TestUser(TestCase):
     u = f.UserFactory()
     self.assertTrue(u.last_login)
 
-  def test_user_extrnal_fields(self):
+  def test_user_external_fields(self):
     u = f.UserFactory()
     self.assertFalse(u.external_source)
     self.assertFalse(u.external_id)
 
 
+class TestSource(TestCase):
+  def test_source(self):
+    o = f.SourceFactory(name=u'Ääkköstesti')
+    self.assertTrue(o)
+    self.assertTrue(unicode(o), o.__unicode__())
+    self.assertTrue(str(o))
+    self.assertTrue(o.name)
+    self.assertTrue(o.created)
+    self.assertTrue(o.modified)
+
+
 class TestMunicipality(TestCase):
   def test_municipality(self):
-    o = f.MunicipalityFactory()
+    o = f.MunicipalityFactory(name=u'Ääkköstesti')
     self.assertTrue(o)
+    self.assertTrue(o.name)
+    self.assertTrue(unicode(o) == o.name)
+    self.assertTrue(o.created)
+    self.assertTrue(o.modified)
 
 
 class TestSchool(TestCase):
   def test_school(self):
-    o = f.SchoolFactory()
+    o = f.SchoolFactory(name=u'Ääkköstesti', municipality__name=u'Ääkköskunta')
     self.assertTrue(o)
+    self.assertTrue(o.name)
+    self.assertIn(o.name, unicode(o))
+    self.assertIn(o.municipality.name, unicode(o))
+    self.assertTrue(o.created)
+    self.assertTrue(o.modified)
 
 
 class TestAttribute(TestCase):
   def test_attribute(self):
-    o = f.AttributeFactory()
+    o = f.AttributeFactory(name=u'Ääkköstesti')
     self.assertTrue(o)
+    self.assertTrue(o.name)
+    self.assertTrue(unicode(o) == o.name)
+    self.assertTrue(o.created)
+    self.assertTrue(o.modified)
 
 
 class TestUserAttribute(TestCase):
   def test_userattribute(self):
-    o = f.UserAttributeFactory()
+    o = f.UserAttributeFactory(attribute__name=u'Ääkkösattribute',
+                               value=u'Ääkkösvalue')
     self.assertTrue(o)
+    self.assertTrue(o.value)
+    self.assertTrue(o.created)
+    self.assertTrue(o.modified)
+    self.assertIn(u'Ääkkösattribute', unicode(o))
+    self.assertIn(u'Ääkkösvalue', unicode(o))
 
 
 class TestRole(TestCase):
   def test_role(self):
-    o = f.RoleFactory()
+    o = f.RoleFactory(name=u'Ääkkösrooli')
     self.assertTrue(o)
+    self.assertTrue(o.name)
+    self.assertTrue(unicode(o) == o.name)
+    self.assertTrue(o.created)
+    self.assertTrue(o.modified)
 
 
 class TestAttendance(TestCase):
   def test_attendance(self):
-    o = f.AttendanceFactory()
+    o = f.AttendanceFactory(school__name=u'Ääkkösschool',
+        school__municipality__name=u'Ääkkösmunicipality',
+        role__name=u'Ääkkösrole', group=u'Ääkkösgroup')
     self.assertTrue(o)
+    self.assertTrue(o.created)
+    self.assertTrue(o.modified)
+    self.assertIn(u'Ääkkösschool', unicode(o))
+    self.assertIn(u'Ääkkösrole', unicode(o))
+    self.assertIn(u'Ääkkösmunicipality', unicode(o))
 
+
+class TestTimeStampedModel(TestCase):
+  def test_timestampedmodel(self):
+    o = models.TimeStampedModel()
+    self.assertTrue(o.created is None)
+    self.assertTrue(o.modified is None)
 
 # vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
 

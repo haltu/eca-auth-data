@@ -1,4 +1,5 @@
-# -*- encoding: utf-8 -*-
+
+# -*- coding: utf-8 -*-
 
 # The MIT License (MIT)
 #
@@ -22,20 +23,41 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""
-WSGI config for auth-data project.
+from mock import Mock
+from django.test import TestCase
+from authdata import admin
 
-It exposes the WSGI callable as a module-level variable named ``application``.
 
-For more information on this file, see
-https://docs.djangoproject.com/en/1.7/howto/deployment/wsgi/
-"""
+class TestAdmin(TestCase):
 
-import os
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "project.production")
+  def test_municipality(self):
+    obj = admin.MunicipalityAdmin(Mock(), Mock())
+    self.assertTrue(obj)
 
-from django.core.wsgi import get_wsgi_application  # noqa
-application = get_wsgi_application()
+  def test_school(self):
+    obj = admin.SchoolAdmin(Mock(), Mock())
+    self.assertTrue(obj)
+
+  def test_attendance(self):
+    obj = admin.AttendanceAdmin(Mock(), Mock())
+    self.assertTrue(obj)
+
+  def test_attribute(self):
+    obj = admin.AttributeAdmin(Mock(), Mock())
+    self.assertTrue(obj)
+
+  def test_userattribute(self):
+    obj = admin.UserAttributeAdmin(Mock(), Mock())
+    self.assertTrue(obj)
+
+  def test_source(self):
+    obj = admin.SourceAdmin(Mock(), Mock())
+    self.assertTrue(obj)
+
+  def test_user(self):
+    obj = admin.UserAdmin(Mock(), Mock())
+    self.assertTrue(obj)
+
 
 # vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
 
