@@ -1,4 +1,5 @@
-# -*- encoding: utf-8 -*-
+
+# -*- coding: utf-8 -*-
 
 # The MIT License (MIT)
 #
@@ -21,30 +22,40 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-#
 
-from django.conf.urls import patterns, include, url
-from django.contrib import admin
-from rest_framework import routers
-from authdata.views import QueryView
-from authdata.views import UserViewSet, AttributeViewSet, UserAttributeViewSet, MunicipalityViewSet, SchoolViewSet, RoleViewSet, AttendanceViewSet
+from rest_framework.test import APIRequestFactory
+from rest_framework.test import APITestCase
+from rest_framework.test import force_authenticate
 
-router = routers.DefaultRouter()
-router.register(r'user', UserViewSet)
-router.register(r'attribute', AttributeViewSet)
-router.register(r'userattribute', UserAttributeViewSet)
-router.register(r'municipality', MunicipalityViewSet)
-router.register(r'school', SchoolViewSet)
-router.register(r'role', RoleViewSet)
-router.register(r'attendance', AttendanceViewSet)
+from authdata import views
+from authdata.tests.factories import UserFactory
 
 
-urlpatterns = patterns('',
-    url(r'^api/1/user$', QueryView.as_view()),  # This should be removed as "/user" and "/user/" are now different which is confusing. User "/query/" instead
-    url(r'^api/1/query(/(?P<username>[\w._-]+))?/?$', QueryView.as_view()),
-    url(r'^api/1/', include(router.urls)),
-    url(r'^sysadmin/', include(admin.site.urls)),
-)
+class TestQueryView(APITestCase):
+
+  def setUp(self):
+    self.request_factory = APIRequestFactory()
+    self.user = UserFactory.create()
+
+  def test_get_user_does_not_exist(self):
+    request = self.request_factory.get('/api/1/users')
+    force_authenticate(request, user=self.user)
+    view = views.QueryView.as_view()
+
+    response = view(request, username='foo')
+
+    self.assertEqual(response.status_code, 404)
+
+  def test_get_user_exists(self):
+    request = self.request_factory.get('/api/1/users')
+    force_authenticate(request, user=self.user)
+    view = views.QueryView.as_view()
+
+    UserFactory.create(username='foo')
+    response = view(request, username='foo')
+
+    self.assertEqual(response.status_code, 200)
+
 
 # vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
 

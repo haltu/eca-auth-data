@@ -21,30 +21,21 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-#
 
-from django.conf.urls import patterns, include, url
-from django.contrib import admin
-from rest_framework import routers
-from authdata.views import QueryView
-from authdata.views import UserViewSet, AttributeViewSet, UserAttributeViewSet, MunicipalityViewSet, SchoolViewSet, RoleViewSet, AttendanceViewSet
+"""
+WSGI config for auth-data project.
 
-router = routers.DefaultRouter()
-router.register(r'user', UserViewSet)
-router.register(r'attribute', AttributeViewSet)
-router.register(r'userattribute', UserAttributeViewSet)
-router.register(r'municipality', MunicipalityViewSet)
-router.register(r'school', SchoolViewSet)
-router.register(r'role', RoleViewSet)
-router.register(r'attendance', AttendanceViewSet)
+It exposes the WSGI callable as a module-level variable named ``application``.
 
+For more information on this file, see
+https://docs.djangoproject.com/en/1.7/howto/deployment/wsgi/
+"""
 
-urlpatterns = patterns('',
-    url(r'^api/1/user$', QueryView.as_view()),  # This should be removed as "/user" and "/user/" are now different which is confusing. User "/query/" instead
-    url(r'^api/1/query(/(?P<username>[\w._-]+))?/?$', QueryView.as_view()),
-    url(r'^api/1/', include(router.urls)),
-    url(r'^sysadmin/', include(admin.site.urls)),
-)
+import os
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "authdata.production")
+
+from django.core.wsgi import get_wsgi_application  # noqa
+application = get_wsgi_application()
 
 # vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
 

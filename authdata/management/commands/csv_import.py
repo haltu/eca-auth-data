@@ -21,8 +21,6 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-#
-
 
 import csv
 import codecs
@@ -64,7 +62,7 @@ For example: manage.py csv_import file.csv dreamschool,facebook,twitter,linkedin
         dest='verbose',
         default=False,
         help='Verbose'),
-    )
+  )
 
   def handle(self, *args, **options):
     if len(args) != 2:
@@ -77,23 +75,23 @@ For example: manage.py csv_import file.csv dreamschool,facebook,twitter,linkedin
     # for example: manage.py csv_import file.csv dreamschool,facebook,twitter,linkedin,mepin
     self.attribute_names = OrderedDict()
     for key in args[1].split(','):
-      self.attribute_names[key],_ = Attribute.objects.get_or_create(name=key)
-    self.source,_ = Source.objects.get_or_create(name=options['source'])
+      self.attribute_names[key], _ = Attribute.objects.get_or_create(name=key)
+    self.source, _ = Source.objects.get_or_create(name=options['source'])
     # If you need more roles, add them here
     self.role_names = OrderedDict()
     for r in ['teacher', 'student']:
-      self.role_names[r],_ = Role.objects.get_or_create(name=r)
+      self.role_names[r], _ = Role.objects.get_or_create(name=r)
 
     csv_data = csv.reader(codecs.open(args[0], 'rb'), delimiter=',', quotechar='"')
     for r in csv_data:
       # These are the fixed fields for the User. These are returned from the API.
       data = {
-        'username': r[0], # OID
-        'school': r[1], # School
-        'group': r[2], # Class
-        'role': r[3], # Role
-        'first_name': r[4], # First name
-        'last_name': r[5], # Last name
+        'username': r[0],  # OID
+        'school': r[1],  # School
+        'group': r[2],  # Class
+        'role': r[3],  # Role
+        'first_name': r[4],  # First name
+        'last_name': r[5],  # Last name
       }
 
       # This is not mandatory, but it would be nice. Can be changed to error by terminating the script here.
@@ -101,7 +99,7 @@ For example: manage.py csv_import file.csv dreamschool,facebook,twitter,linkedin
         print 'WARNING, role not in:', repr(self.role_names.keys())
 
       attributes = {}
-      i = 6 # Next csv_data row index is 6 :)
+      i = 6  # Next csv_data row index is 6 :)
       for a in self.attribute_names:
         attributes[a] = r[i]
         i = i + 1
@@ -124,7 +122,7 @@ For example: manage.py csv_import file.csv dreamschool,facebook,twitter,linkedin
   def really_do_this(self, d, a):
     # Create User
     # User is identified from username and other fields are updated
-    user,_ = User.objects.get_or_create(username=d['username'])
+    user, _ = User.objects.get_or_create(username=d['username'])
     user.first_name = d['first_name']
     user.last_name = d['last_name']
     user.save()
@@ -132,17 +130,19 @@ For example: manage.py csv_import file.csv dreamschool,facebook,twitter,linkedin
     # Assign attributes for User
     # There can be multiple attributes with the same name and different value.
     # This is one of the reasons we have the source parameter to tell where the data came from.
-    for k,v in a.iteritems():
-      ua,_ = UserAttribute.objects.get_or_create(user=user, attribute=self.attribute_names[k], value=v, source=self.source)
+    for k, v in a.iteritems():
+      UserAttribute.objects.get_or_create(user=user, attribute=self.attribute_names[k], value=v, source=self.source)
 
     # Create Municipality
     # If you leave this empty on the CLI it will default to '-'
-    municipality,_ = Municipality.objects.get_or_create(name=self.municipality)
+    municipality, _ = Municipality.objects.get_or_create(name=self.municipality)
 
     # Create School
     # School data is not updated after it is created. Data can be then changed in the admin.
-    school,_ = School.objects.get_or_create(school_id=d['school'], defaults={'municipality': municipality, 'name': d['school']})
+    school, _ = School.objects.get_or_create(school_id=d['school'], defaults={'municipality': municipality, 'name': d['school']})
 
     # Create Attendance object for User. There can be more than one Attendance per User.
-    att,_ = Attendance.objects.get_or_create(user=user, school=school, role=self.role_names[d['role']], group=d['group'], source=self.source)
+    Attendance.objects.get_or_create(user=user, school=school, role=self.role_names[d['role']], group=d['group'], source=self.source)
+
+# vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
 

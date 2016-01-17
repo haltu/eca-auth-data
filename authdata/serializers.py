@@ -34,7 +34,7 @@ class QuerySerializer(serializers.ModelSerializer):
 
   class Meta:
     model = User
-    fields = ('username','first_name','last_name','roles','attributes')
+    fields = ('username', 'first_name', 'last_name', 'roles', 'attributes')
 
   def role_data(self, obj):
     data = []
@@ -75,7 +75,7 @@ class UserSerializer(QuerySerializer):
   class Meta:
     model = User
     lookup_field = 'username'
-    fields = ('username','first_name','last_name', 'external_id', 'roles','attributes')
+    fields = ('username', 'first_name', 'last_name', 'external_id', 'roles', 'attributes')
 
 
 class AttributeSerializer(serializers.ModelSerializer):
@@ -141,4 +141,6 @@ class AttendanceSerializer(serializers.ModelSerializer):
     data_source_obj, _ = Source.objects.get_or_create(name=username)
     self.object.data_source = data_source_obj
     return super(AttendanceSerializer, self).save(*args, **kwargs)
+
+# vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
 

@@ -28,165 +28,15 @@
 External data source implementations
 """
 
-import logging
-import hashlib
-import ldap
 import base64
-from external_ldap.source import LDAPDataSource
+import hashlib
+import logging
+
+import ldap
+
+from authdata.datasources.ldap_base import LDAPDataSource
 
 LOG = logging.getLogger(__name__)
-
-
-class TestLDAPDataSource(LDAPDataSource):
-  """
-  Example result from test_ldap
-
-   ('cn=bar,ou=Opettajat,ou=People,ou=LdapKoulu1,ou=KuntaYksi,dc=mpass-test,dc=csc,dc=fi',
-    {'cn': ['bar'],
-     'givenName': ['Ldap'],
-     'mail': ['bar@mpass-test.invalid'],
-     'objectClass': ['top', 'inetOrgPerson'],
-     'sn': ['Opettaja10013'],
-     'title': ['Opettaja'],
-     'uid': ['bar'],
-     'userPassword': ['foo']})
-
-   ('cn=bar,ou=Oppilaat,ou=People,ou=LdapKoulu1,ou=KuntaYksi,dc=mpass-test,dc=csc,dc=fi',
-    {'cn': ['bar'],
-     'departmentNumber': ['6C'],
-     'givenName': ['Ldap'],
-     'mail': ['bar@mpass-test.invalid'],
-     'objectClass': ['top', 'inetOrgPerson'],
-     'sn': ['Oppilas352'],
-     'title': ['Oppilas'],
-     'uid': ['bar'],
-     'userPassword': ['foo']}),
-
-  """
-
-  external_source = 'ldap_test'
-
-  municipality_id_map = {
-    'KuntaYksi': '1234567-8'
-  }
-
-  class _schoolid_generator():
-    """
-    generator for fake school ids
-    """
-    @classmethod
-    def get(cls, name, default=None):
-      import string
-      num = name.strip(string.ascii_letters)
-      num = int(num)
-      return '%05d' % num
-
-  school_id_map = _schoolid_generator
-
-  #'LdapKoulu1': '00001',
-  #'LdapKoulu2': '00002',
-  #'LdapKoulu3': '00003',
-  #'LdapKoulu4': '00004',
-  #'LdapKoulu5': '00005',
-  #'LdapKoulu6': '00006',
-  #'LdapKoulu7': '00007',
-  #'LdapKoulu8': '00008',
-  #'LdapKoulu9': '00009',
-  #'LdapKoulu10': '00010',
-  #'LdapKoulu11': '00011',
-  # etc...
-
-  def __init__(self, *args, **kwargs):
-    self.ldap_base_dn = 'ou=KuntaYksi,dc=mpass-test,dc=csc,dc=fi'
-    self.ldap_filter = "(&(uid={value})(objectclass=inetOrgPerson))"
-    """
-    ldap_filter = Filter for finding the required user in an LDAP query,
-                  for example "(&(attribute={value})(objectclass=inetOrgPerson))"
-                  Query will substitue {value} with Auth Proxy's attribute query value.
-    """
-    super(TestLDAPDataSource, self).__init__(*args, **kwargs)
-
-  def get_oid(self, username):
-    """
-    There is no OID information in this external source. Generate fake OID
-    from username.
-    """
-    # TODO: OID is cut to 30 chars due to django username limitation
-    return 'MPASSOID.{user_hash}'.format(user_hash=hashlib.sha1('ldap_test' + username).hexdigest())[:30]
-
-  def get_data(self, external_id):
-    try:
-      query_result = self.query(self.ldap_filter.format(value=external_id))[0]
-    except IndexError:
-      return None
-    dn_parts = query_result[0].split(',')
-    username = query_result[1]['cn'][0]
-    first_name = query_result[1]['givenName'][0]
-    last_name = query_result[1]['sn'][0]
-    oid = self.get_oid(username)
-    attributes = []
-    roles = [{
-      'school': dn_parts[3].strip("ou="),
-      'role': query_result[1]['title'][0],
-      'municipality': dn_parts[4].strip("ou="),
-      'group': query_result[1].get('departmentNumber', [''])[0]
-    }]
-
-    # Provision
-    self.provision_user(oid, external_id)
-
-    return {
-      'username': oid,
-      'first_name': first_name,
-      'last_name': last_name,
-      'roles': roles,
-      'attributes': attributes
-    }
-
-  def get_user_data(self, request):
-    ldap_filter = "objectclass=inetOrgPerson"
-    query_base = self.ldap_base_dn
-    if 'school' in request.GET:
-      self.ldap_base_dn = 'ou=%s,%s' % (request.GET['school'], query_base)
-    if 'group' in request.GET and request.GET['group'] != '':
-      ldap_filter = '(&(departmentNumber=%s)(%s))' % (request.GET['group'], ldap_filter)
-    query_results = self.query(ldap_filter)
-    response = []
-
-    for result in query_results:
-      dn_parts = result[0].split(',')
-      username = result[1]['cn'][0]
-      first_name = result[1]['givenName'][0]
-      last_name = result[1]['sn'][0]
-      external_id = result[1]['uid'][0]
-      oid = self.get_oid(username)
-      attributes = [
-        # TODO: what attributes should be returned from LDAP?
-      ]
-      roles = [{
-        'school': self.get_school_id(dn_parts[3].strip("ou=")),
-        'role': result[1]['title'][0],
-        'municipality': self.get_municipality_id(dn_parts[4].strip("ou=")),
-        'group': result[1].get('departmentNumber', [''])[0]
-      }]
-      response.append({
-        'username': oid,
-        'first_name': first_name,
-        'last_name': last_name,
-        'roles': roles,
-        'attributes': attributes
-      })
-
-      # Provision
-      self.provision_user(oid, external_id)
-
-    # TODO: support actual paging via SimplePagedResultsControl
-    return {
-      'count': len(response),
-      'next': None,
-      'previous': None,
-      'results': response,
-    }
 
 
 class OuluLDAPDataSource(LDAPDataSource):
@@ -257,7 +107,7 @@ class OuluLDAPDataSource(LDAPDataSource):
 
   def __init__(self, base_dn, *args, **kwargs):
     self.ldap_base_dn = base_dn
-    #self.ldap_filter = "(|(sAMAccountName={value})(userPrincipalName={value}@eduouka.fi))"
+    # self.ldap_filter = "(|(sAMAccountName={value})(userPrincipalName={value}@eduouka.fi))"
     self.ldap_filter = "(objectGUID={value})"
     """
     ldap_filter = Filter for finding the required user in an LDAP query,

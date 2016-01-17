@@ -8,3 +8,7 @@ settings_local.py
 local_settings.py
 staticroot/
 newrelic.ini
+.coverage
+.tox
+local_settings.*
+oulu_certificate
