@@ -11,4 +11,8 @@ doc/_html
 _html
 venv
 newrelic.ini
-
+.coverage
+.tox
+local_settings.*
+oulu_certificate
+cover
