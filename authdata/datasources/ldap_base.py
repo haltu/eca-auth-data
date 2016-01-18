@@ -67,6 +67,8 @@ class LDAPDataSource(ExternalDataSource):
   external_source = 'ldap'
 
   def __init__(self, host, username, password, *args, **kwargs):
+    import ldap
+    self.ldap = ldap
     self.ldap_server = host
     self.ldap_username = username
     self.ldap_password = password
@@ -88,7 +90,7 @@ class LDAPDataSource(ExternalDataSource):
     After this method is executed, self.connection is ready for executing
     queries.
     """
-    import ldap
+    ldap = self.ldap # import ldap
     # TODO: error handling
     ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
     self.connection = ldap.initialize(self.ldap_server)
@@ -99,7 +101,7 @@ class LDAPDataSource(ExternalDataSource):
     """
     query ldap with the provided filter string
     """
-    import ldap
+    ldap = self.ldap # import ldap
     if not self.connection:
       self.connect()
     # TODO: LDAP error handling

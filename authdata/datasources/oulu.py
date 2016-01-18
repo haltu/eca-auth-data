@@ -117,7 +117,7 @@ class OuluLDAPDataSource(LDAPDataSource):
     """
     Initialize a secure connection the the LDAP server.
     """
-    import ldap
+    ldap = self.ldap # import ldap
     ldap.set_option(ldap.OPT_X_TLS_CACERTFILE, 'oulu_certificate')
     self.connection = ldap.initialize(self.ldap_server)
     self.connection.set_option(ldap.OPT_REFERRALS, 0)
