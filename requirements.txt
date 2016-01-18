@@ -4,3 +4,4 @@ wsgiref==0.1.2
 gunicorn==18.0.0
 newrelic==2.58.2.45
 raven==5.8.1
+python-ldap==2.4.10

@@ -31,9 +31,6 @@ External data source implementations
 import base64
 import hashlib
 import logging
-
-import ldap
-
 from authdata.datasources.ldap_base import LDAPDataSource
 
 LOG = logging.getLogger(__name__)
@@ -120,6 +117,7 @@ class OuluLDAPDataSource(LDAPDataSource):
     """
     Initialize a secure connection the the LDAP server.
     """
+    import ldap
     ldap.set_option(ldap.OPT_X_TLS_CACERTFILE, 'oulu_certificate')
     self.connection = ldap.initialize(self.ldap_server)
     self.connection.set_option(ldap.OPT_REFERRALS, 0)

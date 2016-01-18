@@ -27,9 +27,6 @@
 import hashlib
 import logging
 import string
-
-import ldap
-
 from authdata.datasources.base import ExternalDataSource
 
 LOG = logging.getLogger(__name__)
@@ -91,6 +88,7 @@ class LDAPDataSource(ExternalDataSource):
     After this method is executed, self.connection is ready for executing
     queries.
     """
+    import ldap
     # TODO: error handling
     ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
     self.connection = ldap.initialize(self.ldap_server)
@@ -101,6 +99,7 @@ class LDAPDataSource(ExternalDataSource):
     """
     query ldap with the provided filter string
     """
+    import ldap
     if not self.connection:
       self.connect()
     # TODO: LDAP error handling
