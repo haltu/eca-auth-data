@@ -294,10 +294,13 @@ class TestQueryView(APITestCase):
     requests_mock.get.return_value = ds_response_mock
 
     self.client.force_authenticate(user=self.user)
-    f.UserAttributeFactory(user=self.user, attribute__name='foo', value='bar')
+    f.UserAttributeFactory(user=self.user,
+        user__external_source='dreamschool',
+        user__external_id=123,
+        attribute__name='foo',
+        value='bar')
     result = self.client.get('/api/1/user?dreamschool=123&foo=bar&zao=zup')
     self.assertEqual(result.status_code, 200)
-
 
   def test_get_user_fetch_no_attribute_binding(self, requests_mock):
     ds_response_mock = mock.Mock()
