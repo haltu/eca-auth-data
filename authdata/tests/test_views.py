@@ -146,6 +146,9 @@ class TestQueryView(APITestCase):
     self.request_factory = APIRequestFactory()
     self.user = f.UserFactory.create()
 
+  def tearDown(self):
+    del self.user
+
   def test_get_object_does_not_exist(self, requests_mock):
     request = self.request_factory.get('/api/1/users')
     force_authenticate(request, user=self.user)
@@ -286,6 +289,26 @@ class TestQueryView(APITestCase):
 
     self.assertEqual(result.status_code, 404, repr(result))
 
+  def test_get_object_with_attributes_unknown_attr(self, requests_mock):
+    ds_response_mock = mock.Mock()
+    ds_response_mock.status_code = 200
+    ds_response_mock.json.return_value = DS_DATA
+    requests_mock.codes = requests.codes
+    requests_mock.get.return_value = ds_response_mock
+
+    self.client.force_authenticate(user=self.user)
+    user_obj = f.UserFactory(
+        external_source='dreamschool',
+        external_id=123,
+    )
+    f.UserAttributeFactory(
+        user=user_obj,
+        attribute__name='foo',
+        value='bar',
+    )
+    result = self.client.get('/api/1/user&zao=zup')
+    self.assertEqual(result.status_code, 404)
+
   def test_get_object_with_attributes(self, requests_mock):
     ds_response_mock = mock.Mock()
     ds_response_mock.status_code = 200
@@ -294,12 +317,21 @@ class TestQueryView(APITestCase):
     requests_mock.get.return_value = ds_response_mock
 
     self.client.force_authenticate(user=self.user)
-    f.UserAttributeFactory(user=self.user,
-        user__external_source='dreamschool',
-        user__external_id=123,
+    user_obj = f.UserFactory(
+        external_source='dreamschool',
+        external_id=123,
+    )
+    f.UserAttributeFactory(
+        user=user_obj,
+        attribute__name='dreamschool',
+        value='123',
+    )
+    f.UserAttributeFactory(
+        user=user_obj,
         attribute__name='foo',
-        value='bar')
-    result = self.client.get('/api/1/user?dreamschool=123&foo=bar&zao=zup')
+        value='bar',
+    )
+    result = self.client.get('/api/1/user?dreamschool=123&foo=bar')
     self.assertEqual(result.status_code, 200)
 
   def test_get_user_fetch_no_attribute_binding(self, requests_mock):
