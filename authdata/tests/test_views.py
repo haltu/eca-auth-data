@@ -331,7 +331,7 @@ class TestQueryView(APITestCase):
         attribute__name='foo',
         value='bar',
     )
-    result = self.client.get('/api/1/user?dreamschool=123&foo=bar')
+    result = self.client.get('/api/1/user?dreamschool=123')
     self.assertEqual(result.status_code, 200)
 
   def test_get_user_fetch_no_attribute_binding(self, requests_mock):

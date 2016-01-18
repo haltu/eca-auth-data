@@ -141,8 +141,7 @@ class QueryView(generics.RetrieveAPIView):
         filter_kwargs['attributes__attribute__name'] = a.name
         filter_kwargs['attributes__value'] = v
         filter_kwargs['attributes__disabled_at__isnull'] = True
-        # TODO: FIX THIS
-        break  # only handle one GET variable for now
+        break
       else:
         raise Http404
     obj = generics.get_object_or_404(qs, **filter_kwargs)
