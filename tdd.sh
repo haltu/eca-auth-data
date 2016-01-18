@@ -26,7 +26,12 @@
 while true
 do
   clear
-  tox -e py27
+  if [ -z "$1" ]
+  then
+    tox -e py27
+  else
+    TOXENV=py27 tox -- $1
+  fi
   inotifywait -r authdata -r project -e move -e close_write
 done
 
