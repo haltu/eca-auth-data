@@ -22,11 +22,13 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-#
+# pylint: disable=locally-disabled, no-member, unused-argument, no-init, old-style-class, too-few-public-methods, unnecessary-lambda
+
 
 import string
 import factory
 import factory.fuzzy
+from django.utils import timezone
 from authdata import models
 
 
@@ -43,6 +45,7 @@ class UserFactory(factory.django.DjangoModelFactory):
 
   first_name = factory.Sequence(lambda n: 'First{0}'.format(n))
   last_name = factory.Sequence(lambda n: 'Last{0}'.format(n))
+  last_login = timezone.now()
   email = factory.LazyAttribute(lambda u:
       '{0}.{1}@example.com'.format(u.first_name, u.last_name))
   username = factory.fuzzy.FuzzyText(length=11, chars=string.digits, prefix='1.2.246.562.24.')

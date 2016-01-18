@@ -22,7 +22,6 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-#
 
 """
 Dreamschool external data source
@@ -34,7 +33,7 @@ import requests
 
 from django.conf import settings
 
-from authdata.models import ExternalDataSource
+from authdata.datasources.base import ExternalDataSource
 
 LOG = logging.getLogger(__name__)
 
@@ -130,9 +129,10 @@ LOG = logging.getLogger(__name__)
 #            "username": "foo.bar"
 #        },
 #    ]
-#}
+# }
 
 TEACHER_PERM = 'dreamdiary.diary.supervisor'
+
 
 class DreamschoolDataSource(ExternalDataSource):
   """
@@ -154,7 +154,7 @@ class DreamschoolDataSource(ExternalDataSource):
   def _get_municipality_by_org_id(self, org_id):
     org_id = int(org_id)
     LOG.debug('Fetching municipality for org_id',
-        extra={'data': {'org_id': org_id}})
+              extra={'data': {'org_id': org_id}})
     for municipality in settings.AUTHDATA_DREAMSCHOOL_ORG_MAP.keys():
       for org_title in settings.AUTHDATA_DREAMSCHOOL_ORG_MAP[municipality]:
         if int(settings.AUTHDATA_DREAMSCHOOL_ORG_MAP[municipality][org_title]) == org_id:
@@ -164,7 +164,7 @@ class DreamschoolDataSource(ExternalDataSource):
   def _get_roles(self, user_data):
     """Create roles structure
 
-    Example::
+    Example of output::
 
       [
           {
@@ -209,8 +209,8 @@ class DreamschoolDataSource(ExternalDataSource):
       return None
 
     LOG.debug('Fetching org id for given municipality and school',
-        extra={'data': {'municipality': repr(municipality),
-                        'school': repr(school)}})
+              extra={'data': {'municipality': repr(municipality),
+              'school': repr(school)}})
 
     try:
       muni = settings.AUTHDATA_DREAMSCHOOL_ORG_MAP[municipality.lower()]
@@ -283,7 +283,7 @@ class DreamschoolDataSource(ExternalDataSource):
       {'api_url': self.api_url,
        'params': params,
        'status_code': r.status_code,
-        }})
+       }})
 
     if r.status_code != requests.codes.ok:
       LOG.warning('Dreamschool API response not OK', extra={'data':
@@ -291,7 +291,8 @@ class DreamschoolDataSource(ExternalDataSource):
          'municipality': repr(municipality),
          'api_url': self.api_url,
          'username': self.username,
-          }})
+         'params': params,
+         }})
       return {
         'count': 0,
         'next': None,
@@ -305,7 +306,12 @@ class DreamschoolDataSource(ExternalDataSource):
       user_data = r.json()
     except ValueError:
       LOG.exception('Could not parse user data from dreamschool API')
-      return response
+      return {
+        'count': 0,
+        'next': None,
+        'previous': None,
+        'results': [],
+      }
 
     for d in user_data['objects']:
       user_id = d['id']
@@ -348,16 +354,16 @@ class DreamschoolDataSource(ExternalDataSource):
     r = requests.get(url, auth=(username, password))
 
     LOG.debug('Fetched from dreamschool', extra={'data':
-      {'api_url': self.api_url,
+      {'url': url,
        'status_code': r.status_code,
-        }})
+       }})
 
     if r.status_code != requests.codes.ok:
       LOG.warning('Dreamschool API response not OK', extra={'data':
         {'status_code': r.status_code,
-         'api_url': self.api_url,
+         'url': url,
          'username': self.username,
-          }})
+         }})
       return None
 
     user_data = {}

@@ -1,0 +1,7 @@
+
+[report]
+
+omit = */migrations/*
+       */tests/*
+       */management/commands/*
+

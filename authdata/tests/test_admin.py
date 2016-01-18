@@ -1,4 +1,5 @@
-# -*- encoding: utf-8 -*-
+
+# -*- coding: utf-8 -*-
 
 # The MIT License (MIT)
 #
@@ -21,30 +22,42 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-#
 
-from django.conf.urls import patterns, include, url
-from django.contrib import admin
-from rest_framework import routers
-from authdata.views import QueryView
-from authdata.views import UserViewSet, AttributeViewSet, UserAttributeViewSet, MunicipalityViewSet, SchoolViewSet, RoleViewSet, AttendanceViewSet
-
-router = routers.DefaultRouter()
-router.register(r'user', UserViewSet)
-router.register(r'attribute', AttributeViewSet)
-router.register(r'userattribute', UserAttributeViewSet)
-router.register(r'municipality', MunicipalityViewSet)
-router.register(r'school', SchoolViewSet)
-router.register(r'role', RoleViewSet)
-router.register(r'attendance', AttendanceViewSet)
+from mock import Mock
+from django.test import TestCase
+from authdata import admin
 
 
-urlpatterns = patterns('',
-    url(r'^api/1/user$', QueryView.as_view()),  # This should be removed as "/user" and "/user/" are now different which is confusing. User "/query/" instead
-    url(r'^api/1/query(/(?P<username>[\w._-]+))?/?$', QueryView.as_view()),
-    url(r'^api/1/', include(router.urls)),
-    url(r'^sysadmin/', include(admin.site.urls)),
-)
+class TestAdmin(TestCase):
+
+  def test_municipality(self):
+    obj = admin.MunicipalityAdmin(Mock(), Mock())
+    self.assertTrue(obj)
+
+  def test_school(self):
+    obj = admin.SchoolAdmin(Mock(), Mock())
+    self.assertTrue(obj)
+
+  def test_attendance(self):
+    obj = admin.AttendanceAdmin(Mock(), Mock())
+    self.assertTrue(obj)
+
+  def test_attribute(self):
+    obj = admin.AttributeAdmin(Mock(), Mock())
+    self.assertTrue(obj)
+
+  def test_userattribute(self):
+    obj = admin.UserAttributeAdmin(Mock(), Mock())
+    self.assertTrue(obj)
+
+  def test_source(self):
+    obj = admin.SourceAdmin(Mock(), Mock())
+    self.assertTrue(obj)
+
+  def test_user(self):
+    obj = admin.UserAdmin(Mock(), Mock())
+    self.assertTrue(obj)
+
 
 # vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
 

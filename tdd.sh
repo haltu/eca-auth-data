@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+#!/usr/bin/env bash
 
 # The MIT License (MIT)
 #
@@ -23,28 +23,15 @@
 # THE SOFTWARE.
 #
 
-from django.conf.urls import patterns, include, url
-from django.contrib import admin
-from rest_framework import routers
-from authdata.views import QueryView
-from authdata.views import UserViewSet, AttributeViewSet, UserAttributeViewSet, MunicipalityViewSet, SchoolViewSet, RoleViewSet, AttendanceViewSet
-
-router = routers.DefaultRouter()
-router.register(r'user', UserViewSet)
-router.register(r'attribute', AttributeViewSet)
-router.register(r'userattribute', UserAttributeViewSet)
-router.register(r'municipality', MunicipalityViewSet)
-router.register(r'school', SchoolViewSet)
-router.register(r'role', RoleViewSet)
-router.register(r'attendance', AttendanceViewSet)
-
-
-urlpatterns = patterns('',
-    url(r'^api/1/user$', QueryView.as_view()),  # This should be removed as "/user" and "/user/" are now different which is confusing. User "/query/" instead
-    url(r'^api/1/query(/(?P<username>[\w._-]+))?/?$', QueryView.as_view()),
-    url(r'^api/1/', include(router.urls)),
-    url(r'^sysadmin/', include(admin.site.urls)),
-)
-
-# vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
+while true
+do
+  clear
+  if [ -z "$1" ]
+  then
+    tox -e py27
+  else
+    TOXENV=py27 tox -- $1
+  fi
+  inotifywait -r authdata -r project -e move -e close_write
+done
 

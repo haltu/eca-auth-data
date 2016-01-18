@@ -1,0 +1,11 @@
+language: python
+python:
+  - "2.7"
+env:
+   - TOX_ENV=py27
+   - TOX_ENV=prospector
+install:
+  - pip install tox
+  - pip install -r development.txt
+script:
+  - tox -e $TOX_ENV

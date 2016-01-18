@@ -24,7 +24,7 @@
 #
 
 
-from authdata.settings import *
+from project.settings import *
 
 DEBUG = False
 TEMPLATE_DEBUG = False
