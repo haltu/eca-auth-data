@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
-os.environ['DJANGO_SETTINGS_MODULE'] = 'authdata.settings'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'project.settings'
 
 import sys
 sys.path.append('.')

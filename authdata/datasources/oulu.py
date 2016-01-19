@@ -25,7 +25,9 @@
 #
 
 """
-External data source implementations
+.. autoclass:: OuluLDAPDataSource
+  :members:
+  :private-members:
 """
 
 import base64

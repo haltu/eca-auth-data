@@ -24,7 +24,105 @@
 # THE SOFTWARE.
 
 """
-Dreamschool external data source
+Example response from Dreamschool::
+
+  {
+     "meta": {
+         "limit": 0,
+         "offset": 0,
+         "total_count": 1
+     },
+     "objects": [
+         {
+             "email": "foo.bar@unelmakoulu.fi",
+             "first_name": "Foo",
+             "id": "123",
+             "last_name": "Bar",
+             "organisations": [
+                 {
+                     "created": "2014-03-12T19:21:47.403524",
+                     "id": "3",
+                     "modified": "2015-08-10T12:37:54.719312",
+                     "name": "Organisation",
+                     "override_username_cleanup": false,
+                     "registration_allowed": false,
+                     "resource_uri": "/api/2/organisation/3/",
+                     "source": "zap",
+                     "title": "Organisation Name"
+                 }
+             ],
+             "phone_number": "+3581234567",
+             "picture_url": "https://id.dreamschool.fi/media/avatar/foo.png",
+             "resource_uri": "/api/2/user/123/",
+             "roles": [
+                 {
+                     "created": "2014-03-12T19:21:47.403524",
+                     "id": "1",
+                     "modified": "2015-10-13T14:10:54.732225",
+                     "name": "teacher",
+                     "official": true,
+                     "organisation": {
+                         "created": "2014-03-12T19:21:47.403524",
+                         "id": "3",
+                         "modified": "2015-08-10T12:37:54.719312",
+                         "name": "foo",
+                         "override_username_cleanup": false,
+                         "registration_allowed": false,
+                         "resource_uri": "/api/2/organisation/3/",
+                         "source": "zap",
+                         "title": "Organisation Name"
+                     },
+                     "permissions": [
+                         {
+                             "code": "dreamdiary.diary.supervisor",
+                             "id": "12",
+                             "name": "dreamdiary",
+                             "resource_uri": ""
+                         },
+                     ],
+                     "resource_uri": "/api/2/role/1/",
+                     "source": "zap",
+                     "title": "teacher"
+                 }
+             ],
+             "theme_color": "ffffff",
+             "user_groups": [
+                 {
+                     "created": "2014-03-12T19:21:47.403524",
+                     "filter_type": null,
+                     "id": "2",
+                     "level": 0,
+                     "lft": 1,
+                     "modified": "2014-03-12T19:21:47.403524",
+                     "name": "1a",
+                     "official": false,
+                     "organisation": {
+                         "created": "2014-03-12T19:21:47.403524",
+                         "id": "3",
+                         "modified": "2015-08-10T12:37:54.719312",
+                         "name": "foo",
+                         "override_username_cleanup": false,
+                         "registration_allowed": false,
+                         "resource_uri": "/api/2/organisation/3/",
+                         "source": "zap",
+                         "title": "Organisation Name"
+                     },
+                     "resource_uri": "/api/2/group/2/",
+                     "rght": 2,
+                     "source": "",
+                     "title": "1a",
+                     "tree_id": 150
+                 },
+             ],
+             "username": "foo.bar"
+         },
+     ]
+  }
+
+.. autoclass:: DreamschoolDataSource
+   :members:
+   :private-members:
+
 """
 
 import logging
@@ -37,109 +135,16 @@ from authdata.datasources.base import ExternalDataSource
 
 LOG = logging.getLogger(__name__)
 
-# Example response from Dreamschool
-# {
-#    "meta": {
-#        "limit": 0,
-#        "offset": 0,
-#        "total_count": 1
-#    },
-#    "objects": [
-#        {
-#            "email": "foo.bar@unelmakoulu.fi",
-#            "first_name": "Foo",
-#            "id": "123",
-#            "last_name": "Bar",
-#            "organisations": [
-#                {
-#                    "created": "2014-03-12T19:21:47.403524",
-#                    "id": "3",
-#                    "modified": "2015-08-10T12:37:54.719312",
-#                    "name": "Organisation",
-#                    "override_username_cleanup": false,
-#                    "registration_allowed": false,
-#                    "resource_uri": "/api/2/organisation/3/",
-#                    "source": "zap",
-#                    "title": "Organisation Name"
-#                }
-#            ],
-#            "phone_number": "+3581234567",
-#            "picture_url": "https://id.dreamschool.fi/media/avatar/foo.png",
-#            "resource_uri": "/api/2/user/123/",
-#            "roles": [
-#                {
-#                    "created": "2014-03-12T19:21:47.403524",
-#                    "id": "1",
-#                    "modified": "2015-10-13T14:10:54.732225",
-#                    "name": "teacher",
-#                    "official": true,
-#                    "organisation": {
-#                        "created": "2014-03-12T19:21:47.403524",
-#                        "id": "3",
-#                        "modified": "2015-08-10T12:37:54.719312",
-#                        "name": "foo",
-#                        "override_username_cleanup": false,
-#                        "registration_allowed": false,
-#                        "resource_uri": "/api/2/organisation/3/",
-#                        "source": "zap",
-#                        "title": "Organisation Name"
-#                    },
-#                    "permissions": [
-#                        {
-#                            "code": "dreamdiary.diary.supervisor",
-#                            "id": "12",
-#                            "name": "dreamdiary",
-#                            "resource_uri": ""
-#                        },
-#                    ],
-#                    "resource_uri": "/api/2/role/1/",
-#                    "source": "zap",
-#                    "title": "teacher"
-#                }
-#            ],
-#            "theme_color": "ffffff",
-#            "user_groups": [
-#                {
-#                    "created": "2014-03-12T19:21:47.403524",
-#                    "filter_type": null,
-#                    "id": "2",
-#                    "level": 0,
-#                    "lft": 1,
-#                    "modified": "2014-03-12T19:21:47.403524",
-#                    "name": "1a",
-#                    "official": false,
-#                    "organisation": {
-#                        "created": "2014-03-12T19:21:47.403524",
-#                        "id": "3",
-#                        "modified": "2015-08-10T12:37:54.719312",
-#                        "name": "foo",
-#                        "override_username_cleanup": false,
-#                        "registration_allowed": false,
-#                        "resource_uri": "/api/2/organisation/3/",
-#                        "source": "zap",
-#                        "title": "Organisation Name"
-#                    },
-#                    "resource_uri": "/api/2/group/2/",
-#                    "rght": 2,
-#                    "source": "",
-#                    "title": "1a",
-#                    "tree_id": 150
-#                },
-#            ],
-#            "username": "foo.bar"
-#        },
-#    ]
-# }
-
 TEACHER_PERM = 'dreamdiary.diary.supervisor'
 
 
 class DreamschoolDataSource(ExternalDataSource):
   """
   Required configuration parameters:
-    api_url
-    username
-    password
+
+  * api_url
+  * username
+  * password
   """
 
   external_source = 'dreamschool'

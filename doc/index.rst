@@ -131,29 +131,25 @@ This returns all matches. The data returned is in the same format as the
 Attribute query data, with the exception that only attributes from the querying
 user's source are returned.
 
-
-External Sources
+External sources
 ================
 
-Auth Data can act as a proxy for external user data sources. In this case user
-data is stored only in the external source and not in Auth Data. Auth Data will
-however maintain a record of the user identity, storing the external source
-name, user unique identifier in the external source and any attributes that are
-associated to the user account.
+.. automodule:: authdata.datasources
 
-Each external source is a unique case, for example an LDAP database requiring
-credentials and having a specific schema where the information about users is
-stored. Each external source has a middleware implementation which is
-responsible for reading data and presenting it to Auth Data using a specific
-interface. This interface is specified in the abstract interface class
-ExternalDataSource (in models.py) which must be inherited by external data
-source implementations.
+.. automodule:: authdata.datasources.base
 
-External sources are configured in Auth Data settings. In user list query (``/api/1/user/``) the
-municipality search term is used to forward the query to the external source
-implementation. In the attribute query (``/api/1/query``) Auth Data finds the
-user in it's local database based on attribute or username the local User
-object contains the external source name and external source unique id which
-are used for querying the actual user data from the source.
+LDAP
+----
 
+.. automodule:: authdata.datasources.ldap_base
+
+Oulu LDAP
+---------
+
+.. automodule:: authdata.datasources.oulu
+
+Dreamschool
+-----------
+
+.. automodule:: authdata.datasources.dreamschool
 
