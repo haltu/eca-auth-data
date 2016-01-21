@@ -24,12 +24,6 @@
 # THE SOFTWARE.
 #
 
-"""
-.. autoclass:: OuluLDAPDataSource
-  :members:
-  :private-members:
-"""
-
 import base64
 import hashlib
 import logging
@@ -39,12 +33,11 @@ LOG = logging.getLogger(__name__)
 
 
 class OuluLDAPDataSource(LDAPDataSource):
-  """
-  Required configuration parameters:
-    host
-    username
-    password
-    base_dn
+  """Datasource for Oulu LDAP
+
+  .. autoattribute:: external_source
+  .. autoattribute:: municipality_id_map
+  .. autoattribute:: school_id_map
   """
 
   external_source = 'ad_oulu'

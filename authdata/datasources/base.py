@@ -23,12 +23,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""
-.. autoclass:: ExternalDataSource
-   :members:
-   :private-members:
-"""
-
 import logging
 from authdata.models import User, Source, Attribute, UserAttribute
 

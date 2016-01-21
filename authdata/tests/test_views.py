@@ -129,7 +129,7 @@ class TestHelpers(APITestCase):
       requests_mock.get.return_value = response_mock
       requests_mock.codes = requests.codes
 
-      ext_user_data = authdata.views.get_external_user_data('dreamschool', '123')
+      ext_user_data = authdata.views._get_external_user_data('dreamschool', '123')
       ext_user_data['roles'] = list(ext_user_data['roles'])
 
       self.assertEqual(ext_user_data, DS_EXPECTED)
@@ -207,7 +207,7 @@ class TestQueryView(APITestCase):
     self.user.external_id = 123
     self.user.save()
 
-    with mock.patch('authdata.views.get_external_user_data') as ext_mock:
+    with mock.patch('authdata.views._get_external_user_data') as ext_mock:
       ext_mock.side_effect = ImportError
       response = view(request, username=self.user.username)
 
@@ -223,7 +223,7 @@ class TestQueryView(APITestCase):
     self.user.external_id = 123
     self.user.save()
 
-    with mock.patch('authdata.views.get_external_user_data') as ext_mock:
+    with mock.patch('authdata.views._get_external_user_data') as ext_mock:
       ext_mock.return_value = None
       response = view(request, username=self.user.username)
 
@@ -275,7 +275,7 @@ class TestQueryView(APITestCase):
   def test_get_user_fetch_doesnt_exist(self, requests_mock):
     self.client.force_authenticate(user=self.user)
 
-    with mock.patch('authdata.views.get_external_user_data', return_value=None):
+    with mock.patch('authdata.views._get_external_user_data', return_value=None):
       result = self.client.get('/api/1/user?dreamschool=123')
 
     self.assertEqual(result.status_code, 200, repr(result))
@@ -284,7 +284,7 @@ class TestQueryView(APITestCase):
   def test_get_user_external_source_import_error(self, requests_mock):
     self.client.force_authenticate(user=self.user)
 
-    with mock.patch('authdata.views.get_external_user_data', side_effect=ImportError):
+    with mock.patch('authdata.views._get_external_user_data', side_effect=ImportError):
       result = self.client.get('/api/1/user?dreamschool=123')
 
     self.assertEqual(result.status_code, 404, repr(result))

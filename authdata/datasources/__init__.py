@@ -36,12 +36,15 @@ credentials and having a specific schema where the information about users is
 stored. Each external source has a middleware implementation which is
 responsible for reading data and presenting it to Auth Data using a specific
 interface. This interface is specified in the abstract interface class
-ExternalDataSource (in models.py) which must be inherited by external data
-source implementations.
+:py:class:`authdata.datasources.base.ExternalDataSource` which must be inherited
+by external data source implementations.
 
-External sources are configured in Auth Data settings. In user list query (``/api/1/user/``) the
-municipality search term is used to forward the query to the external source
-implementation. In the attribute query (``/api/1/query``) Auth Data finds the
+External sources are configured in Auth Data settings.
+
+In user list query :py:class:`authdata.views.UserViewSet` the municipality
+search term is used to forward the query to the external source implementation.
+
+In the attribute query :py:class:`authdata.views.QueryView` Auth Data finds the
 user in it's local database based on attribute or username the local User
 object contains the external source name and external source unique id which
 are used for querying the actual user data from the source.

@@ -25,11 +25,13 @@
 #
 
 """
-.. autoclass:: Municipality
-.. autoclass:: School
+The Auth Data service tries to model the real situation
+where one user can be teacher and student in different schools.
+User can have multiple roles, and also multiple roles in one school.
 
+User has :py:class:`Attendance` for a group in school with role.
+School is in Municipality.
 """
-
 
 import logging
 from django.db import models
@@ -39,14 +41,40 @@ LOG = logging.getLogger(__name__)
 
 
 class TimeStampedModel(models.Model):
-  created = models.DateTimeField(auto_now_add=True)
-  modified = models.DateTimeField(auto_now=True)
+  """ Adds timestamp fields to other models.
+  """
+  created = models.DateTimeField(auto_now_add=True, help_text=u'When the object was created')
+  modified = models.DateTimeField(auto_now=True, help_text=u'Updated every time the object is modified')
 
   class Meta:
     abstract = True
 
 
 class User(TimeStampedModel, AbstractUser):
+  """ User models is used for many things.
+
+  Fields used when handling user data:
+
+  * username
+  * first_name
+  * last_name
+
+  Fields used when handling external data source:
+
+  * username
+  * external_source
+  * external_id
+
+  Fields used when authenticated to the admin:
+
+  * username
+  * password
+  * first_name
+  * last_name
+
+  It should be considered if it is good practice to use the same model
+  in different confusing ways even if it works.
+  """
   external_source = models.CharField(max_length=2000, blank=True, default='')
   external_id = models.CharField(max_length=2000, blank=True, default='')
 
@@ -55,6 +83,9 @@ class User(TimeStampedModel, AbstractUser):
 
 
 class Source(TimeStampedModel):
+  """
+  Each time data is written to the database it is marked as owned by a source.
+  """
   name = models.CharField(max_length=2048)
 
   def __unicode__(self):

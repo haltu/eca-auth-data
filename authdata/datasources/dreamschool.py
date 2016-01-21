@@ -119,10 +119,6 @@ Example response from Dreamschool::
      ]
   }
 
-.. autoclass:: DreamschoolDataSource
-   :members:
-   :private-members:
-
 """
 
 import logging

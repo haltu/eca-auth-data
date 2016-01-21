@@ -23,6 +23,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+"""
+The Auth Data service does not have visible UI, only an API which can be queried the contents
+of the database.
+"""
+
 import logging
 import datetime
 import importlib
@@ -41,8 +46,9 @@ from authdata.models import User, Attribute, UserAttribute, Municipality, School
 LOG = logging.getLogger(__name__)
 
 
-def get_external_user_data(external_source, external_id):
-  """
+def _get_external_user_data(external_source, external_id):
+  """ Helper for selecting data source and making the query.
+
   Raises ImportError if external source configuration is wrong
   """
   source = settings.AUTH_EXTERNAL_SOURCES[external_source]
@@ -54,7 +60,17 @@ def get_external_user_data(external_source, external_id):
 
 
 class QueryView(generics.RetrieveAPIView):
-  """ Returns information about one user.
+  """The attribute query endpoint is for querying for the attributes of a single user
+
+  Returned data format is defined in :py:class:`authdata.serializers.QuerySerializer`.
+
+  Auth Data has endpoint ``/api/1/query?name=value`` which can be queried for the attributes.
+
+  Query is made by GET parameters. Only one parameter is allowed.
+  Name of the parameter can contain only a-z chars.
+  The parameter consists of an attribute name and an attribute value.
+  In the query ``name`` is the parameter name used to filter users from the database.
+  The value for the filter parameter is UTF-8 as urlencoded string.
 
   The ``username`` is global unique identifier for the user.
 
@@ -63,14 +79,15 @@ class QueryView(generics.RetrieveAPIView):
 
   Possible values for ``role`` are ``teacher`` and ``student``.
 
-  Query is made by GET parameters. Only one parameter is allowed. The parameter
-  consists of an attribute name and an attribute value.
-
   ``Not found`` is returned if:
 
   * the parameter name is not recognized
   * multiple results would be returned (only one result is allowed)
   * no parameters are specified
+
+  For example, query could be: ``/api/1/query?facebook_id=foo``
+
+  User attributes can be queried with username also. For example: ``/api/1/query/[username]``
   """
   queryset = User.objects.all()
   serializer_class = QuerySerializer
@@ -87,7 +104,7 @@ class QueryView(generics.RetrieveAPIView):
       if user_obj.external_source and user_obj.external_id:
         # user is an external user. fetch data from source.
         try:
-          user_data = get_external_user_data(user_obj.external_source, user_obj.external_id)
+          user_data = _get_external_user_data(user_obj.external_source, user_obj.external_id)
         except ImportError:
           LOG.error('Can not import external authentication source', extra={'data': {'external_source': repr(user_obj.external_source)}})
           return Response(None)
@@ -107,7 +124,7 @@ class QueryView(generics.RetrieveAPIView):
       for attr in request.GET.keys():
         if attr in settings.AUTH_EXTERNAL_ATTRIBUTE_BINDING:
           try:
-            user_data = get_external_user_data(settings.AUTH_EXTERNAL_ATTRIBUTE_BINDING[attr], request.GET.get(attr))
+            user_data = _get_external_user_data(settings.AUTH_EXTERNAL_ATTRIBUTE_BINDING[attr], request.GET.get(attr))
             if user_data is None:
               # queried user does not exist in the external source
               return Response(None)
@@ -176,6 +193,21 @@ class UserFilter(django_filters.FilterSet):
 
 
 class UserViewSet(viewsets.ModelViewSet):
+  """User search endpoint
+
+  User objects can be searched by ``municipality``, ``school``, ``group``,
+  ``username`` and ``changed_at`` attributes.
+
+  Returned data format is defined in :py:class:`authdata.serializers.UserSerializer`.
+
+  * ``municipality`` is a mandatory search parameter
+  * ``school``, ``group`` and ``username`` are string parameters
+  * ``changed_at`` is a POSIX timestamp parameter. Only records changed after
+    this timestamp will be returned. When used with external datasources this
+    parameter has no effect on results.
+
+  Example query: ``/api/1/user/?municipality=Esimerkkikunta&school=Keskustan%20koulu&group=7A&changed_at=1444398009``
+  """
   queryset = User.objects.all().distinct()
   serializer_class = UserSerializer
   filter_backends = (filters.DjangoFilterBackend,)

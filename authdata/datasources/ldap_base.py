@@ -23,12 +23,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""
-.. autoclass:: LDAPDataSource
-   :members:
-   :private-members:
-"""
-
 import hashlib
 import logging
 import string
@@ -42,17 +36,27 @@ class LDAPDataSource(ExternalDataSource):
   Abstract base class for implementing external LDAP data sources.
 
   Implementations must provide values for:
-    ldap_server: address of the server
-    ldap_username: name for binding
-    ldap_password: password for binding
-    ldap_base_dn: base distinguished name for the queries
 
-  KWARGS dictionary in configuration should be in the format:
+  * ldap_server: address of the server
+  * ldap_username: name for binding
+  * ldap_password: password for binding
+  * ldap_base_dn: base distinguished name for the queries
+
+  Base implementation gets first three values from the constructor.
+  Value for ``ldap_base_dn`` needs to be provided by some other means when implementing.
+
+  Attributes ``municipality_id_map`` and ``school_id_map`` can be used to map
+  between local and external identifiers.
+
+  Configuration should be in the format::
+
     {
       'host': connection string for ldap server,
       'username': name to bind as,
       'password': password
     }
+
+  .. automethod:: __init__
   """
   ldap_server = None
   ldap_username = None
@@ -72,6 +76,12 @@ class LDAPDataSource(ExternalDataSource):
   external_source = 'ldap'
 
   def __init__(self, host, username, password, *args, **kwargs):
+    """
+    Args:
+        host (string): hostname for LDAP connection
+        username (string): username for LDAP connection
+        password (string): password for LDAP connection
+    """
     import ldap
     self.ldap = ldap
     self.ldap_server = host

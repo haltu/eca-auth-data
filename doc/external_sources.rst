@@ -1,5 +1,0 @@
-
-External Sources
-****************
-
-

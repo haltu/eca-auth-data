@@ -23,3 +23,8 @@
 # THE SOFTWARE.
 #
 
+"""
+Auth Data service is an abstraction of actual data store, or multiple datastores,
+which contain user identity and role information.
+"""
+
