@@ -38,34 +38,41 @@ from authdata.models import UserAttribute
 
 
 class MunicipalityAdmin(admin.ModelAdmin):
+    """Manages Municipality objects"""
     list_display = ('name',)
 
 
 class SchoolAdmin(admin.ModelAdmin):
+    """SchoolAdmin"""
     list_display = ('name',)
 
 
 class RoleAdmin(admin.ModelAdmin):
+    """RoleAdmin"""
     list_display = ('name',)
 
 
 class AttendanceAdmin(admin.ModelAdmin):
+    """AttendanceAdmin"""
     list_display = ('user', 'school', 'role', 'group', 'data_source')
     list_filter = ('role', 'data_source')
     search_fields = ('school__school_id', 'school__name', 'school__municipality__name', 'user__username', 'group',)
 
 
 class AttributeAdmin(admin.ModelAdmin):
+    """AttributeAdmin"""
     list_display = ('name',)
 
 
 class UserAttributeAdmin(admin.ModelAdmin):
+    """UserAttributeAdmin"""
     list_display = ('user', 'attribute', 'value')
     list_filter = ('attribute',)
     search_fields = ('user__username', 'value')
 
 
 class SourceAdmin(admin.ModelAdmin):
+    """SourceAdmin"""
     list_display = ('name',)
 
 
@@ -80,6 +87,7 @@ class AttendanceInline(admin.TabularInline):
 
 
 class UserAdmin(DjangoUserAdmin):
+    """UserAdmin"""
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
         (_('Personal info'), {'fields': ('first_name', 'last_name', 'email')}),

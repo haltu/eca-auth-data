@@ -416,7 +416,7 @@ class TestLDAPDataSource(TestCase):
     self.obj = authdata.datasources.ldap_base.LDAPDataSource(host='host',
         username='foo', password='bar', external_source='foo')
 
-    authdata.datasources.ldap_base.ldap = mock.Mock()
+    self.obj.ldap = mock.Mock()
 
   def test_init(self):
     self.assertTrue(self.obj)
@@ -450,7 +450,7 @@ class TestLdapTest(TestCase):
   def setUp(self):
     self.obj = authdata.datasources.ldap_base.TestLDAPDataSource(host='host',
         username='foo', password='bar', external_source='foo')
-    authdata.datasources.ldap_base.ldap = mock.Mock()
+    self.obj.ldap = mock.Mock()
 
   def test_init(self):
     self.assertTrue(self.obj)
@@ -555,7 +555,7 @@ class TestOuluLDAPDataSource(TestCase):
   def setUp(self):
     self.obj = authdata.datasources.oulu.OuluLDAPDataSource(base_dn='base',
         host='host', username='foo', password='bar', external_source='foo')
-    authdata.datasources.oulu.ldap = mock.Mock()
+    self.obj.ldap = mock.Mock()
 
     self.q_results = [(
         'cn=bar,ou=Opettajat,ou=People,ou=LdapKoulu1,ou=KuntaYksi,dc=mpass-test,dc=csc,dc=fi',

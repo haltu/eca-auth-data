@@ -23,13 +23,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-
 import hashlib
 import logging
 import string
-
-import ldap
-
 from authdata.datasources.base import ExternalDataSource
 
 LOG = logging.getLogger(__name__)
@@ -40,17 +36,27 @@ class LDAPDataSource(ExternalDataSource):
   Abstract base class for implementing external LDAP data sources.
 
   Implementations must provide values for:
-    ldap_server: address of the server
-    ldap_username: name for binding
-    ldap_password: password for binding
-    ldap_base_dn: base distinguished name for the queries
 
-  KWARGS dictionary in configuration should be in the format:
+  * ldap_server: address of the server
+  * ldap_username: name for binding
+  * ldap_password: password for binding
+  * ldap_base_dn: base distinguished name for the queries
+
+  Base implementation gets first three values from the constructor.
+  Value for ``ldap_base_dn`` needs to be provided by some other means when implementing.
+
+  Attributes ``municipality_id_map`` and ``school_id_map`` can be used to map
+  between local and external identifiers.
+
+  Configuration should be in the format::
+
     {
       'host': connection string for ldap server,
       'username': name to bind as,
       'password': password
     }
+
+  .. automethod:: __init__
   """
   ldap_server = None
   ldap_username = None
@@ -70,6 +76,14 @@ class LDAPDataSource(ExternalDataSource):
   external_source = 'ldap'
 
   def __init__(self, host, username, password, *args, **kwargs):
+    """
+    Args:
+        host (string): hostname for LDAP connection
+        username (string): username for LDAP connection
+        password (string): password for LDAP connection
+    """
+    import ldap
+    self.ldap = ldap
     self.ldap_server = host
     self.ldap_username = username
     self.ldap_password = password
@@ -91,6 +105,7 @@ class LDAPDataSource(ExternalDataSource):
     After this method is executed, self.connection is ready for executing
     queries.
     """
+    ldap = self.ldap # import ldap
     # TODO: error handling
     ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
     self.connection = ldap.initialize(self.ldap_server)
@@ -101,6 +116,7 @@ class LDAPDataSource(ExternalDataSource):
     """
     query ldap with the provided filter string
     """
+    ldap = self.ldap # import ldap
     if not self.connection:
       self.connect()
     # TODO: LDAP error handling

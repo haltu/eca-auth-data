@@ -7,6 +7,9 @@ db.sqlite3
 settings_local.py
 local_settings.py
 staticroot/
+doc/_html
+_html
+venv
 newrelic.ini
 .coverage
 .tox

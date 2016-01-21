@@ -24,28 +24,20 @@
 # THE SOFTWARE.
 #
 
-"""
-External data source implementations
-"""
-
 import base64
 import hashlib
 import logging
-
-import ldap
-
 from authdata.datasources.ldap_base import LDAPDataSource
 
 LOG = logging.getLogger(__name__)
 
 
 class OuluLDAPDataSource(LDAPDataSource):
-  """
-  Required configuration parameters:
-    host
-    username
-    password
-    base_dn
+  """Datasource for Oulu LDAP
+
+  .. autoattribute:: external_source
+  .. autoattribute:: municipality_id_map
+  .. autoattribute:: school_id_map
   """
 
   external_source = 'ad_oulu'
@@ -120,6 +112,7 @@ class OuluLDAPDataSource(LDAPDataSource):
     """
     Initialize a secure connection the the LDAP server.
     """
+    ldap = self.ldap # import ldap
     ldap.set_option(ldap.OPT_X_TLS_CACERTFILE, 'oulu_certificate')
     self.connection = ldap.initialize(self.ldap_server)
     self.connection.set_option(ldap.OPT_REFERRALS, 0)

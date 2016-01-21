@@ -29,6 +29,59 @@ from authdata.models import User, Attribute, UserAttribute, Municipality, School
 
 
 class QuerySerializer(serializers.ModelSerializer):
+  """Serializer for the query endpoint.
+
+  Data returned from the API looks like this::
+
+    {
+      "username": "123abc",
+      "first_name": "Teppo",
+      "last_name": "Testaaja",
+      "roles": [
+        {
+          "school": "17392",
+          "role": "teacher",
+          "group": "7A",
+          "municipality": "1234567-8"
+        },
+        {
+          "school": "17392",
+          "role": "teacher",
+          "group": "7B",
+          "municipality": "1234567-8"
+        }
+      ]
+      "attributes": [
+        {
+          "name": "attribute1_id",
+          "value": "attribute1_data"
+        },
+        {
+          "name": "attribute2_id",
+          "value": "attribute2_data"
+        }
+      ]
+    }
+
+  General fields:
+
+  username
+    This is unique identifier for the user.
+
+  Fields in the ``roles`` dict are defined as follows:
+
+  school
+    Official school ID.
+  role
+    Either ``"teacher"`` or ``"student"``.
+  group
+    The class or group for the user.
+
+  In addition to role data custom attributes can be added at runtime. These are installation specific and defined in
+  the database.
+
+  Returns user objects with roles and attributes.
+  """
   roles = serializers.SerializerMethodField('role_data')
   attributes = serializers.SerializerMethodField('attribute_data')
 
@@ -58,6 +111,12 @@ class QuerySerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(QuerySerializer):
+  """Serializer for user objects.
+
+  This inherits from QuerySerializer.
+
+  Only attributes from the querying user's source are returned.
+  """
 
   def attribute_data(self, obj):
     # attribute data is filtered. only attributes where source is requesting user's username are returned

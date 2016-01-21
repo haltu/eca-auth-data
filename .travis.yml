@@ -4,8 +4,8 @@ python:
 env:
    - TOX_ENV=py27
    - TOX_ENV=prospector
+   - TOX_ENV=docs
 install:
   - pip install tox
-  - pip install -r development.txt
 script:
   - tox -e $TOX_ENV

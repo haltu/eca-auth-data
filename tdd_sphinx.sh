@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+#!/usr/bin/env bash
 
 # The MIT License (MIT)
 #
@@ -23,8 +23,10 @@
 # THE SOFTWARE.
 #
 
-"""
-Auth Data service is an abstraction of actual data store, or multiple datastores,
-which contain user identity and role information.
-"""
+while true
+do
+  clear
+  sphinx-build -a -E -b html doc _html
+  inotifywait -r doc -r authdata -r project -e move -e close_write
+done
 
