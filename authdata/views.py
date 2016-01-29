@@ -114,7 +114,7 @@ class QueryView(generics.RetrieveAPIView):
         if user_data is None:
           # queried user does not exist in the external source
           return Response(None)
-        for user_attribute in user_obj.attributes.all():
+        for user_attribute in user_obj.attributes.filter(disabled_at__isnull=True):
           # Add attributes to user data
           user_data['attributes'].append({'name': user_attribute.attribute.name, 'value': user_attribute.value})
         LOG.debug('/query returning data', extra={'data': {'user_data': repr(user_data)}})
@@ -131,7 +131,7 @@ class QueryView(generics.RetrieveAPIView):
 
             # New users are created in data source
             user_obj = User.objects.get(username=user_data['username'])
-            for user_attribute in user_obj.attributes.all():
+            for user_attribute in user_obj.attributes.filter(disabled_at__isnull=True):
               # Add attributes to user data
               user_data['attributes'].append({'name': user_attribute.attribute.name, 'value': user_attribute.value})
             LOG.debug('/query returning data', extra={'data': {'user_data': repr(user_data)}})
